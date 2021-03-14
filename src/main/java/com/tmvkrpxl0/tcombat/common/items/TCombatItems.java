@@ -14,4 +14,6 @@ public class TCombatItems {
 
     public static final RegistryObject<Item> WORLD_AXE = ITEMS.register("world_axe",
             () -> new AxeItem(ItemTier.NETHERITE, 5.0F, -3.0F, (new Item.Properties()).group(ItemGroup.TOOLS).isImmuneToFire()));
+    public static final RegistryObject<Item> MOBILE_DISPENSER = ITEMS.register("mobile_dispenser", () ->
+            new MobileDispenser(new Item.Properties().group(ItemGroup.TOOLS).maxStackSize(1)));
 }

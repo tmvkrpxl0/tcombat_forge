@@ -1,0 +1,20 @@
+{
+
+  "loader": "forge:composite",
+  "parts": {
+    "dispenser": {
+      "parent": "minecraft:item/dispenser",
+      "transform": {
+        "scale": [0.3,0.3,0.3],
+        "origin": [0.5,0.3,0.6]
+      }
+    },
+    "button": {
+      "parent": "minecraft:item/stone_button",
+      "transform": {
+        "scale": [0.4,0.25,0.4],
+        "origin": [0.5,0.55,0.6]
+      }
+    }
+  }
+}

@@ -4,7 +4,11 @@ import com.tmvkrpxl0.tcombat.common.skills.AbstractSkill;
 import com.tmvkrpxl0.tcombat.common.skills.Skills;
 import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.api.distmarker.Dist;
+import net.minecraftforge.client.event.GuiContainerEvent;
+import net.minecraftforge.client.event.GuiOpenEvent;
+import net.minecraftforge.client.event.GuiScreenEvent;
 import net.minecraftforge.event.RegistryEvent;
+import net.minecraftforge.event.entity.player.PlayerContainerEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.registries.IForgeRegistry;
@@ -13,7 +17,7 @@ import net.minecraftforge.registries.RegistryBuilder;
 import static com.tmvkrpxl0.tcombat.TCombatMain.LOGGER;
 import static com.tmvkrpxl0.tcombat.TCombatMain.MODID;
 
-@Mod.EventBusSubscriber(modid=MODID,bus = Mod.EventBusSubscriber.Bus.MOD, value = {Dist.CLIENT,Dist.DEDICATED_SERVER})
+@Mod.EventBusSubscriber(modid=MODID,bus = Mod.EventBusSubscriber.Bus.FORGE, value = {Dist.CLIENT,Dist.DEDICATED_SERVER})
 public class CommonEventListener {
     @SubscribeEvent
     public static void onRegistryCreation(RegistryEvent.NewRegistry event){
