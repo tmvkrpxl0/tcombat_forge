@@ -10,6 +10,7 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.util.text.ITextComponent;
 import net.minecraftforge.items.CapabilityItemHandler;
 import net.minecraftforge.items.IItemHandler;
+import net.minecraftforge.items.ItemStackHandler;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -35,18 +36,18 @@ public class MobileDispenserGui implements INamedContainerProvider {
         DispenserContainer container = new DispenserContainer(windowId, inventory){
             @Override
             public void onContainerClosed(@Nonnull PlayerEntity playerIn) {
-                if(optional.isPresent()){
-                    IItemHandler handler = optional.get();
+                if(optional.isPresent() && player.isServerWorld()){
+                    ItemStackHandler handler = (ItemStackHandler) optional.get();
                     for(int i = 0;i<9;i++){
                         Slot slot = this.getSlot(i);
                         ItemStack stack = slot.getStack();
-                        handler.insertItem(i, stack, false);
+                        handler.setStackInSlot(i, stack);
                     }
                 }
                 super.onContainerClosed(playerIn);
             }
         };
-        if(optional.isPresent()){
+        if(optional.isPresent() && player.isServerWorld()){
             IItemHandler handler = optional.get();
             for(int i = 0;i<9;i++){
                 container.putStackInSlot(i, handler.getStackInSlot(i));
