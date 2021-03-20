@@ -52,26 +52,26 @@ public class TCombatPacketHandler {
                 });
         id++;
         INSTANCE.registerMessage(id, TargetSetPacket.class, (targetSetPacket, packetBuffer) -> {
-            packetBuffer.writeUniqueId(targetSetPacket.getUniqueID());
+            packetBuffer.writeUUID(targetSetPacket.getUniqueID());
             packetBuffer.writeVarIntArray(targetSetPacket.entityIds());
         },
                 packetBuffer -> {
-                    UUID uuid = packetBuffer.readUniqueId();
+                    UUID uuid = packetBuffer.readUUID();
                     int[] entityIds = packetBuffer.readVarIntArray(100);
-                    ServerLifecycleHooks.getCurrentServer().getPlayerList().getPlayerByUUID(uuid)
-                            .sendMessage(new StringTextComponent("Sending.. Count: " + entityIds.length), Util.DUMMY_UUID);
+                    ServerLifecycleHooks.getCurrentServer().getPlayerList().getPlayer(uuid)
+                            .sendMessage(new StringTextComponent("Sending.. Count: " + entityIds.length), Util.NIL_UUID);
                     return new TargetSetPacket(uuid, entityIds);
                 }, (targetSetPacket, contextSupplier) -> {
                     LinkedList<LivingEntity> list = new LinkedList<>();
                     ServerPlayerEntity playerEntity = contextSupplier.get().getSender();
-                    World world = playerEntity.world;
+                    World world = playerEntity.level;
                     contextSupplier.get().enqueueWork(() -> {
                         for(int i : targetSetPacket.entityIds()){
-                            Entity entity = world.getEntityByID(i);
+                            Entity entity = world.getEntity(i);
                             if(entity instanceof LivingEntity)list.add((LivingEntity)entity);
                         }
                         TCombatUtil.setTargets(playerEntity, list);
-                        playerEntity.sendMessage(new StringTextComponent("Succeed! Count: " + TCombatUtil.getTargets(playerEntity).size()), Util.DUMMY_UUID);
+                        playerEntity.sendMessage(new StringTextComponent("Succeed! Count: " + TCombatUtil.getTargets(playerEntity).size()), Util.NIL_UUID);
                     });
                     contextSupplier.get().setPacketHandled(true);
                 });

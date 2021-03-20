@@ -16,18 +16,18 @@ public class TCombatUtil {
     private static final HashMap<PlayerEntity, List<LivingEntity>> targets = new HashMap<>();
 
     public static double getEntityVectorAngle(@Nonnull Entity from, @Nonnull Entity to, @Nonnull Vector3d sourceToDestVelocity){
-        Vector3d sourcePosition = from.getPositionVec();
-        Vector3d targetPosition = to.getPositionVec();
+        Vector3d sourcePosition = from.position();
+        Vector3d targetPosition = to.position();
         Vector3d difference = targetPosition.subtract(sourcePosition);
         return Math.toDegrees(angle(sourceToDestVelocity, difference));
     }
 
     public static double getEntityToEntityAngle(@Nonnull Entity from, @Nonnull Entity to){
-        return getEntityVectorAngle(from, to, from.getMotion());
+        return getEntityVectorAngle(from, to, from.getDeltaMovement());
     }
 
     public static float angle(@Nonnull Vector3d a, Vector3d b) {
-        double dot = Doubles.constrainToRange(a.dotProduct(b) / (a.length() * b.length()), -1.0D, 1.0D);
+        double dot = Doubles.constrainToRange(a.dot(b) / (a.length() * b.length()), -1.0D, 1.0D);
         return (float)Math.acos(dot);
     }
 

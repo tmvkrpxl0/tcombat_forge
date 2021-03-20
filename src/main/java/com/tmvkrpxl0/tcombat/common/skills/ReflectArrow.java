@@ -20,16 +20,16 @@ import java.util.List;
 
 public class ReflectArrow extends AbstractActiveSkill{
     private static final Field inGroundField = ObfuscationReflectionHelper.findField(AbstractArrowEntity.class, "inGround");
-    private static final AxisAlignedBB sizeBig = AxisAlignedBB.withSizeAtOrigin(30, 30, 30);
-    private static final AxisAlignedBB sizeSmall = AxisAlignedBB.withSizeAtOrigin(0.2,0.2,0.2);
+    private static final AxisAlignedBB sizeBig = AxisAlignedBB.ofSize(30, 30, 30);
+    private static final AxisAlignedBB sizeSmall = AxisAlignedBB.ofSize(0.2,0.2,0.2);
     @Override
     public boolean execute(ServerPlayerEntity player) {
-        if(!player.getEntityWorld().isRemote){
-            AxisAlignedBB axisAlignedBB = sizeBig.offset(player.getPositionVec());
-            List<Entity> list = player.world.getEntitiesInAABBexcluding(player, axisAlignedBB,
+        if(!player.getCommandSenderWorld().isClientSide){
+            AxisAlignedBB axisAlignedBB = sizeBig.move(player.position());
+            List<Entity> list = player.level.getEntities(player, axisAlignedBB,
                     o -> {
                         try {
-                            return o instanceof ProjectileEntity && o.getDistanceSq(player) < (15*15) && player.canEntityBeSeen(o) &&
+                            return o instanceof ProjectileEntity && o.distanceToSqr(player) < (15*15) && player.canSee(o) &&
                                     TCombatUtil.getEntityToEntityAngle(o, player) < 30 && (!(o instanceof ArrowEntity) || !inGroundField.getBoolean(o));
                         } catch (IllegalAccessException e) {
                             e.printStackTrace();
@@ -38,25 +38,25 @@ public class ReflectArrow extends AbstractActiveSkill{
                     });
             TCombatMain.LOGGER.info("GOT THE LIST!");
             if(list.isEmpty())return false;
-            Vector3d lookVec = player.getLook(1F);
+            Vector3d lookVec = player.getViewVector(1F);
             Vector3d eyeVector = player.getEyePosition(1F);
             for(Entity e : list){
                 ProjectileEntity projectile = (ProjectileEntity) e;
-                Vector3d entityVector = projectile.getPositionVec();
+                Vector3d entityVector = projectile.position();
                 Vector3d difference = entityVector.subtract(eyeVector);
-                boolean flyToLeft = -lookVec.getX() * difference.getZ() + lookVec.getZ() * difference.getX() > 0;
+                boolean flyToLeft = -lookVec.x() * difference.z() + lookVec.z() * difference.x() > 0;
                 double radian = Math.toRadians(flyToLeft ? 90 : -90);
-                Vector3d velocity = projectile.getMotion();
-                double x = velocity.getX();
-                double z = velocity.getZ();
+                Vector3d velocity = projectile.getDeltaMovement();
+                double x = velocity.x();
+                double z = velocity.z();
                 double sin = Math.sin(radian);
                 double cos = Math.cos(radian);
-                projectile.setMotion(cos * x - sin * z, projectile.getMotion().y, sin * x + cos * z);
-                projectile.velocityChanged = true;
-                e.world.addParticle(ParticleTypes.SWEEP_ATTACK, entityVector.x, entityVector.y, entityVector.z, 0, 0, 0);
-                player.playSound(SoundEvents.ENTITY_PLAYER_ATTACK_SWEEP, 0.2F, 1);
-                for(Entity temp : e.world.getEntitiesWithinAABBExcludingEntity(e, sizeSmall.offset(entityVector))){
-                    temp.attackEntityFrom(DamageSource.causePlayerDamage(player), 1);
+                projectile.setDeltaMovement(cos * x - sin * z, projectile.getDeltaMovement().y, sin * x + cos * z);
+                projectile.hurtMarked = true;
+                e.level.addParticle(ParticleTypes.SWEEP_ATTACK, entityVector.x, entityVector.y, entityVector.z, 0, 0, 0);
+                player.playSound(SoundEvents.PLAYER_ATTACK_SWEEP, 0.2F, 1);
+                for(Entity temp : e.level.getEntities(e, sizeSmall.move(entityVector))){
+                    temp.hurt(DamageSource.playerAttack(player), 1);
                 }
 
             }

@@ -26,7 +26,7 @@ public class MobileDispenserGui implements INamedContainerProvider {
     @Nonnull
     @Override
     public ITextComponent getDisplayName() {
-        return mobileDispenser.getDisplayName();
+        return mobileDispenser.getHoverName();
     }
 
     @Nullable
@@ -35,22 +35,22 @@ public class MobileDispenserGui implements INamedContainerProvider {
         Optional<IItemHandler> optional = mobileDispenser.getCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY).resolve();
         DispenserContainer container = new DispenserContainer(windowId, inventory){
             @Override
-            public void onContainerClosed(@Nonnull PlayerEntity playerIn) {
-                if(optional.isPresent() && player.isServerWorld()){
+            public void removed(@Nonnull PlayerEntity playerIn) {
+                if(optional.isPresent() && player.isEffectiveAi()){
                     ItemStackHandler handler = (ItemStackHandler) optional.get();
                     for(int i = 0;i<9;i++){
                         Slot slot = this.getSlot(i);
-                        ItemStack stack = slot.getStack();
+                        ItemStack stack = slot.getItem();
                         handler.setStackInSlot(i, stack);
                     }
                 }
-                super.onContainerClosed(playerIn);
+                super.removed(playerIn);
             }
         };
-        if(optional.isPresent() && player.isServerWorld()){
+        if(optional.isPresent() && player.isEffectiveAi()){
             IItemHandler handler = optional.get();
             for(int i = 0;i<9;i++){
-                container.putStackInSlot(i, handler.getStackInSlot(i));
+                container.setItem(i, handler.getStackInSlot(i));
             }
         }
         return container;

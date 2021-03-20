@@ -1,5 +1,6 @@
-package com.tmvkrpxl0.tcombat.common.entities;
+package com.tmvkrpxl0.tcombat.common.entities.misc;
 
+import com.tmvkrpxl0.tcombat.common.entities.TCombatEntityTypes;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
 import net.minecraft.entity.Entity;
@@ -18,12 +19,12 @@ import net.minecraftforge.fml.network.NetworkHooks;
 
 public class CustomizableBlockEntity extends Entity {
     private boolean isSolid = false;
-    protected static final DataParameter<Integer> OWNER_ID = EntityDataManager.createKey(IronGolemEntity.class, DataSerializers.VARINT);
+    protected static final DataParameter<Integer> OWNER_ID = EntityDataManager.defineId(IronGolemEntity.class, DataSerializers.INT);
     private PlayerEntity player;
-    private BlockState blockState = Blocks.SAND.getDefaultState();
+    private BlockState blockState = Blocks.SAND.defaultBlockState();
     public CustomizableBlockEntity(World worldIn, double x, double y, double z, BlockState blockState, PlayerEntity player, boolean isSolid) {
         this(TCombatEntityTypes.CUSTOMIZEABLE_BLOCK_ENTITY.get(), worldIn);
-        this.setPosition(x, y + (double)((1.0F - this.getHeight()) / 2.0F), z);
+        this.setPos(x, y + (double)((1.0F - this.getBbHeight()) / 2.0F), z);
         this.player = player;
         this.blockState = blockState;
         this.isSolid = isSolid;
@@ -37,31 +38,31 @@ public class CustomizableBlockEntity extends Entity {
     @Override
     public void tick() {
         super.tick();
-        if(!world.isRemote){
-            if(player==null || !player.isAlive() || !world.getPlayers().contains(player))this.remove();
+        if(!level.isClientSide){
+            if(player==null || !player.isAlive() || !level.players().contains(player))this.remove();
         }
     }
 
     @Override
-    protected void registerData() {
-        this.dataManager.register(OWNER_ID, player.getEntityId());
+    protected void defineSynchedData() {
+        this.entityData.define(OWNER_ID, player.getId());
     }
 
     @Override
-    protected void readAdditional(CompoundNBT compound) {
+    protected void readAdditionalSaveData(CompoundNBT compound) {
         this.blockState = NBTUtil.readBlockState(compound.getCompound("BlockState"));
-        if(this.blockState.getBlock().isAir(this.blockState, this.getEntityWorld(), this.getPosition())){
-            this.blockState = Blocks.SAND.getDefaultState();
+        if(this.blockState.getBlock().isAir(this.blockState, this.getCommandSenderWorld(), this.blockPosition())){
+            this.blockState = Blocks.SAND.defaultBlockState();
         }
         this.isSolid = compound.getBoolean("Solid");
-        this.player = world.getPlayerByUuid(compound.getUniqueId("Owner"));
+        this.player = level.getPlayerByUUID(compound.getUUID("Owner"));
     }
 
     @Override
-    protected void writeAdditional(CompoundNBT compound) {
+    protected void addAdditionalSaveData(CompoundNBT compound) {
         compound.putBoolean("Solid", isSolid);
         compound.put("BlockState", NBTUtil.writeBlockState(blockState));
-        compound.putUniqueId("Owner", player.getUniqueID());
+        compound.putUUID("Owner", player.getUUID());
     }
 
 
@@ -70,12 +71,12 @@ public class CustomizableBlockEntity extends Entity {
     }
 
     @Override
-    public boolean func_241845_aY() {
+    public boolean canBeCollidedWith() {
         return true;
     }
 
     @Override
-    public IPacket<?> createSpawnPacket() {
+    public IPacket<?> getAddEntityPacket() {
         return NetworkHooks.getEntitySpawningPacket(this);
     }
 }

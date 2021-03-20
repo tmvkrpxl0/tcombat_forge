@@ -8,6 +8,7 @@ import net.minecraftforge.client.event.GuiContainerEvent;
 import net.minecraftforge.client.event.GuiOpenEvent;
 import net.minecraftforge.client.event.GuiScreenEvent;
 import net.minecraftforge.event.RegistryEvent;
+import net.minecraftforge.event.entity.ProjectileImpactEvent;
 import net.minecraftforge.event.entity.player.PlayerContainerEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
@@ -27,5 +28,10 @@ public class CommonEventListener {
         IForgeRegistry<AbstractSkill> registry = builder.create();
         registry.registerAll(Skills.ARROW_SENSE, Skills.REFLECT_ARROW);
         LOGGER.info("Registry Created!");
+    }
+
+    @SubscribeEvent
+    public static void onArrowHit(ProjectileImpactEvent event){
+
     }
 }

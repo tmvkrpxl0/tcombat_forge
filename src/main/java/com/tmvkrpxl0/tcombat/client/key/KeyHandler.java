@@ -25,6 +25,8 @@ import org.lwjgl.glfw.GLFW;
 import java.util.LinkedList;
 import java.util.List;
 
+import com.tmvkrpxl0.tcombat.client.key.AbstractKeyHandler.Builder;
+
 public class KeyHandler extends AbstractKeyHandler{
     //This class is based on MekanismKeyHandler.java from mekanism
     private static final String CATEGORY = "tmvkrpxl0 combat";
@@ -57,16 +59,16 @@ public class KeyHandler extends AbstractKeyHandler{
         if(kb==KB_REFLECT_ARROW){
             TCombatPacketHandler.INSTANCE.sendToServer(new SkillRequestPacket(Skills.REFLECT_ARROW));
         }else if(kb==KB_SET_TARGETS){
-            World world = player.world;
-            AxisAlignedBB axisAlignedBB = AxisAlignedBB.withSizeAtOrigin(100, 100, 100).offset(player.getPosition());
+            World world = player.level;
+            AxisAlignedBB axisAlignedBB = AxisAlignedBB.ofSize(100, 100, 100).move(player.blockPosition());
             List<LivingEntity> livingEntities = new LinkedList<>();
-            List<Entity> entities = world.getEntitiesWithinAABBExcludingEntity(player, axisAlignedBB);
+            List<Entity> entities = world.getEntities(player, axisAlignedBB);
             for(Entity e : entities){
-                if(e instanceof LivingEntity && e.isAlive() && player.canEntityBeSeen(e) && player.getDistanceSq(e) < (2500))livingEntities.add((LivingEntity) e);
+                if(e instanceof LivingEntity && e.isAlive() && player.canSee(e) && player.distanceToSqr(e) < (2500))livingEntities.add((LivingEntity) e);
             }
 
-            int[] entityIds = livingEntities.stream().mapToInt(Entity::getEntityId).toArray();
-            TCombatPacketHandler.INSTANCE.sendToServer(new TargetSetPacket(player.getUniqueID(), entityIds));
+            int[] entityIds = livingEntities.stream().mapToInt(Entity::getId).toArray();
+            TCombatPacketHandler.INSTANCE.sendToServer(new TargetSetPacket(player.getUUID(), entityIds));
         }
     }
 
