@@ -1,4 +1,8 @@
 {
     "item.tcombat.world_axe":"World Axe",
-    "item.tcombat.mobile_dispenser": "Mobile Dispenser"
+    "item.tcombat.mobile_dispenser": "Mobile Dispenser",
+    "enchantment.tcombat.focus": "Focus",
+    "item.tcombat.tnt_arrow": "TNT arrow",
+    "enchantment.tcombat.crossbow_flame": "Crossbow Flame",
+    "enchantment.tcombat.snipe": "Snipe"
 }

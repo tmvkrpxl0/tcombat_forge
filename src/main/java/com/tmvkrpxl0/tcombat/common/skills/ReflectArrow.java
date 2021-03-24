@@ -19,7 +19,6 @@ import java.lang.reflect.Field;
 import java.util.List;
 
 public class ReflectArrow extends AbstractActiveSkill{
-    private static final Field inGroundField = ObfuscationReflectionHelper.findField(AbstractArrowEntity.class, "inGround");
     private static final AxisAlignedBB sizeBig = AxisAlignedBB.ofSize(30, 30, 30);
     private static final AxisAlignedBB sizeSmall = AxisAlignedBB.ofSize(0.2,0.2,0.2);
     @Override
@@ -27,15 +26,8 @@ public class ReflectArrow extends AbstractActiveSkill{
         if(!player.getCommandSenderWorld().isClientSide){
             AxisAlignedBB axisAlignedBB = sizeBig.move(player.position());
             List<Entity> list = player.level.getEntities(player, axisAlignedBB,
-                    o -> {
-                        try {
-                            return o instanceof ProjectileEntity && o.distanceToSqr(player) < (15*15) && player.canSee(o) &&
-                                    TCombatUtil.getEntityToEntityAngle(o, player) < 30 && (!(o instanceof ArrowEntity) || !inGroundField.getBoolean(o));
-                        } catch (IllegalAccessException e) {
-                            e.printStackTrace();
-                            return false;
-                        }
-                    });
+                    o -> o instanceof ProjectileEntity && o.distanceToSqr(player) < (15*15) && player.canSee(o) &&
+                            TCombatUtil.getEntityToEntityAngle(o, player) < 30 && (!(o instanceof ArrowEntity) || o.isOnGround()));
             TCombatMain.LOGGER.info("GOT THE LIST!");
             if(list.isEmpty())return false;
             Vector3d lookVec = player.getViewVector(1F);

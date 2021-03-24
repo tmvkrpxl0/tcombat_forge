@@ -1,0 +1,25 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern":
+  [
+    "xxx",
+    "xax",
+    "xxx"
+  ],
+  "key":
+  {
+    "x":
+    {
+      "item": "minecraft:arrow"
+    },
+    "a":
+    {
+      "item": "minecraft:tnt"
+    }
+  },
+  "result":
+  {
+    "item": "tcombat:tnt_arrow",
+    "count": 8
+  }
+}

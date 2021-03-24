@@ -26,10 +26,12 @@ public class TNTArrow extends ArrowItem {
         });
     }
 
+    @Nonnull
     @Override
-    public AbstractArrowEntity createArrow(World p_200887_1_, ItemStack p_200887_2_, LivingEntity p_200887_3_) {
+    public AbstractArrowEntity createArrow(@Nonnull World p_200887_1_, @Nonnull ItemStack p_200887_2_, LivingEntity p_200887_3_) {
         Vector3d pos = p_200887_3_.position();
         TNTArrowEntity entity = new TNTArrowEntity(p_200887_1_, pos.x, pos.y, pos.z);
+        entity.setOwner(p_200887_3_);
         return entity;
     }
 }

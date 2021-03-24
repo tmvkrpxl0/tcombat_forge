@@ -1,7 +1,5 @@
 package com.tmvkrpxl0.tcombat.common.skills;
 
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.item.Item;
 import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.registries.IForgeRegistryEntry;
 

@@ -1,5 +1,6 @@
 package com.tmvkrpxl0.tcombat;
 
+import com.tmvkrpxl0.tcombat.common.enchants.TCombatEnchants;
 import com.tmvkrpxl0.tcombat.common.entities.TCombatEntityTypes;
 import com.tmvkrpxl0.tcombat.common.items.TCombatItems;
 import com.tmvkrpxl0.tcombat.common.network.packets.TCombatPacketHandler;
@@ -25,5 +26,6 @@ public class TCombatMain
         IEventBus bus = FMLJavaModLoadingContext.get().getModEventBus();
         TCombatEntityTypes.ENTITIES.register(bus);
         TCombatItems.ITEMS.register(bus);
+        TCombatEnchants.ENCHANTMENTS.register(bus);
     }
 }
