@@ -10,24 +10,28 @@ import net.minecraft.entity.projectile.ProjectileEntity;
 import net.minecraft.network.play.server.SEntityVelocityPacket;
 import net.minecraft.particles.ParticleTypes;
 import net.minecraft.util.DamageSource;
+import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.SoundEvents;
 import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.vector.Vector3d;
 import net.minecraftforge.fml.common.ObfuscationReflectionHelper;
 
+import javax.annotation.Nullable;
 import java.lang.reflect.Field;
 import java.util.List;
 
 public class ReflectArrow extends AbstractActiveSkill{
     private static final AxisAlignedBB sizeBig = AxisAlignedBB.ofSize(30, 30, 30);
     private static final AxisAlignedBB sizeSmall = AxisAlignedBB.ofSize(0.2,0.2,0.2);
+    private static final ResourceLocation NAME = new ResourceLocation(TCombatMain.MODID, "reflect_arrow");
     @Override
     public boolean execute(ServerPlayerEntity player) {
         if(!player.getCommandSenderWorld().isClientSide){
             AxisAlignedBB axisAlignedBB = sizeBig.move(player.position());
             List<Entity> list = player.level.getEntities(player, axisAlignedBB,
                     o -> o instanceof ProjectileEntity && o.distanceToSqr(player) < (15*15) && player.canSee(o) &&
-                            TCombatUtil.getEntityToEntityAngle(o, player) < 30 && (!(o instanceof ArrowEntity) || o.isOnGround()));
+                            TCombatUtil.getEntityToEntityAngle(o, player) < 30 && (!(o instanceof ArrowEntity) ||
+                                !TCombatUtil.inGround((AbstractArrowEntity) o)));
             TCombatMain.LOGGER.info("GOT THE LIST!");
             if(list.isEmpty())return false;
             Vector3d lookVec = player.getViewVector(1F);
@@ -55,5 +59,11 @@ public class ReflectArrow extends AbstractActiveSkill{
             TCombatMain.LOGGER.info("REFLECTED!!!");
         }
         return true;
+    }
+
+    @Nullable
+    @Override
+    public ResourceLocation getRegistryName() {
+        return NAME;
     }
 }

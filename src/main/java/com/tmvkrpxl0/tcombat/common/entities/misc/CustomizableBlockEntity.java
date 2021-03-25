@@ -7,6 +7,7 @@ import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.passive.IronGolemEntity;
 import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.fluid.Fluids;
 import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.nbt.NBTUtil;
 import net.minecraft.network.IPacket;
@@ -16,6 +17,8 @@ import net.minecraft.network.datasync.EntityDataManager;
 import net.minecraft.world.World;
 import net.minecraftforge.fml.network.NetworkHooks;
 
+import javax.annotation.Nonnull;
+
 
 public class CustomizableBlockEntity extends Entity {
     private boolean isSolid = false;
@@ -23,11 +26,12 @@ public class CustomizableBlockEntity extends Entity {
     private PlayerEntity player;
     private BlockState blockState = Blocks.SAND.defaultBlockState();
     public CustomizableBlockEntity(World worldIn, double x, double y, double z, BlockState blockState, PlayerEntity player, boolean isSolid) {
-        this(TCombatEntityTypes.CUSTOMIZEABLE_BLOCK_ENTITY.get(), worldIn);
+        super(TCombatEntityTypes.CUSTOMIZEABLE_BLOCK_ENTITY.get(), worldIn);
         this.setPos(x, y + (double)((1.0F - this.getBbHeight()) / 2.0F), z);
         this.player = player;
         this.blockState = blockState;
         this.isSolid = isSolid;
+        this.entityData.set(OWNER_ID, this.player.getId());
     }
 
 
@@ -41,11 +45,12 @@ public class CustomizableBlockEntity extends Entity {
         if(!level.isClientSide){
             if(player==null || !player.isAlive() || !level.players().contains(player))this.remove();
         }
+        blockState = Blocks.DARK_OAK_SAPLING.defaultBlockState();
     }
 
     @Override
     protected void defineSynchedData() {
-        this.entityData.define(OWNER_ID, player.getId());
+        this.entityData.define(OWNER_ID, 0);
     }
 
     @Override
@@ -72,9 +77,10 @@ public class CustomizableBlockEntity extends Entity {
 
     @Override
     public boolean canBeCollidedWith() {
-        return true;
+        return isSolid;
     }
 
+    @Nonnull
     @Override
     public IPacket<?> getAddEntityPacket() {
         return NetworkHooks.getEntitySpawningPacket(this);

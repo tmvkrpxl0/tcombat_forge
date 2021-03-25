@@ -6,6 +6,7 @@ import net.minecraft.entity.EntityType;
 import net.minecraft.entity.projectile.AbstractArrowEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.network.IPacket;
+import net.minecraft.particles.ParticleTypes;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.BlockRayTraceResult;
 import net.minecraft.util.math.EntityRayTraceResult;
@@ -42,14 +43,9 @@ public class TNTArrowEntity extends AbstractArrowEntity {
                 this.remove();
             }
         }
-    }
-
-    public boolean isExplode() {
-        return explode;
-    }
-
-    public void setExplode(boolean explode){
-        this.explode = explode;
+        if(explode){
+            this.level.addParticle(ParticleTypes.SMOKE, getX(), getY(), getZ(), 0, 0, 0);
+        }
     }
 
     @Override

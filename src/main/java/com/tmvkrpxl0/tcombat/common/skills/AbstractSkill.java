@@ -9,18 +9,11 @@ import static com.tmvkrpxl0.tcombat.TCombatMain.LOGGER;
 import static com.tmvkrpxl0.tcombat.TCombatMain.MODID;
 
 public abstract class AbstractSkill implements IForgeRegistryEntry<AbstractSkill> {
-    private static final ResourceLocation NAME = new ResourceLocation(MODID, "skill_registry");
 
     @Override
     public AbstractSkill setRegistryName(ResourceLocation name) {
         LOGGER.warn("Skill names are unchangeable! ignoring setRegistryName");
         return this;
-    }
-
-    @Nullable
-    @Override
-    public ResourceLocation getRegistryName() {
-        return NAME;
     }
 
     @Override

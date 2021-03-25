@@ -8,9 +8,9 @@ import net.minecraft.block.material.Material;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.entity.projectile.AbstractArrowEntity;
 import net.minecraft.fluid.FlowingFluid;
 import net.minecraft.fluid.Fluid;
-import net.minecraft.fluid.FluidState;
 import net.minecraft.item.BucketItem;
 import net.minecraft.particles.ParticleTypes;
 import net.minecraft.tags.FluidTags;
@@ -22,9 +22,11 @@ import net.minecraft.util.math.BlockRayTraceResult;
 import net.minecraft.util.math.vector.Vector3d;
 import net.minecraft.world.IWorld;
 import net.minecraft.world.World;
+import org.apache.commons.lang3.reflect.FieldUtils;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import java.lang.reflect.Field;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -32,6 +34,7 @@ import java.util.stream.Collectors;
 
 public class TCombatUtil {
     private static final HashMap<PlayerEntity, List<LivingEntity>> targets = new HashMap<>();
+    private static final Field inGround = FieldUtils.getDeclaredField(AbstractArrowEntity.class, "inGround", true);
 
     public static double getEntityVectorAngle(@Nonnull Entity from, @Nonnull Entity to, @Nonnull Vector3d sourceToDestVelocity){
         Vector3d sourcePosition = from.position();
@@ -110,5 +113,14 @@ public class TCombatUtil {
 
     public static void setTargets(@Nonnull PlayerEntity player, @Nonnull List<LivingEntity> list){
         targets.put(player, list);
+    }
+
+    public static boolean inGround(@Nonnull AbstractArrowEntity abstractArrowEntity){
+        try {
+            return inGround.getBoolean(abstractArrowEntity);
+        } catch (IllegalAccessException e) {
+            e.printStackTrace();
+            return false;
+        }
     }
 }

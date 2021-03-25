@@ -6,30 +6,21 @@ import com.tmvkrpxl0.tcombat.common.skills.AbstractSkill;
 import com.tmvkrpxl0.tcombat.common.util.TCombatUtil;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.LivingEntity;
-import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.player.ServerPlayerEntity;
-import net.minecraft.network.PacketBuffer;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.Util;
-import net.minecraft.util.text.ITextComponent;
 import net.minecraft.util.text.StringTextComponent;
 import net.minecraft.world.World;
-import net.minecraftforge.fml.network.NetworkEvent;
 import net.minecraftforge.fml.network.NetworkRegistry;
 import net.minecraftforge.fml.network.simple.SimpleChannel;
 import net.minecraftforge.fml.server.ServerLifecycleHooks;
 
 import java.util.LinkedList;
-import java.util.Objects;
 import java.util.UUID;
-import java.util.function.BiConsumer;
-import java.util.function.Function;
-import java.util.function.Supplier;
 
 public class TCombatPacketHandler {
     private static final String PROTOCOL_VERSION = "1";
     public static final String CHANNEL_NAME = "tcombat_packet_handler";
-    private int id = 0;
     public static final SimpleChannel INSTANCE = NetworkRegistry.newSimpleChannel(
             new ResourceLocation(TCombatMain.MODID, CHANNEL_NAME),
             () -> PROTOCOL_VERSION,
@@ -37,9 +28,10 @@ public class TCombatPacketHandler {
             PROTOCOL_VERSION::equals
     );
     public TCombatPacketHandler(){
+        int id = 0;
         INSTANCE.registerMessage(id, SkillRequestPacket.class,
                 (skillRequestPacket, packetBuffer) ->
-                        packetBuffer.writeRegistryId(Objects.requireNonNull(skillRequestPacket).getSkill()),
+                        packetBuffer.writeRegistryId(skillRequestPacket.getSkill()),
                 packetBuffer -> {
                     AbstractSkill skill = packetBuffer.readRegistryIdSafe(AbstractSkill.class);
                     if(!(skill instanceof AbstractActiveSkill)){

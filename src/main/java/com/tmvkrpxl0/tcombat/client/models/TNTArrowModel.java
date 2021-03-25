@@ -17,8 +17,8 @@ public class TNTArrowModel extends EntityModel<TNTArrowEntity> {
         texHeight = 64;
         texWidth = 64;
 
-        this.box.addBox(-1, -1f,-8, 1, 1f, 8, 0,0,0);
-        this.box.setPos(0.5f,1.5f,1);
+        this.box.addBox(-8, -1f,-1, 8, 1f, 1, 0,0,0);
+
         this.box.visible=true;
     }
 
@@ -27,9 +27,8 @@ public class TNTArrowModel extends EntityModel<TNTArrowEntity> {
     }
 
     @Override
-    public void renderToBuffer(MatrixStack p_225598_1_, @Nonnull IVertexBuilder p_225598_2_, int p_225598_3_, int p_225598_4_, float p_225598_5_, float p_225598_6_, float p_225598_7_, float p_225598_8_) {
-        p_225598_1_.pushPose();
-        box.render(p_225598_1_, p_225598_2_, p_225598_3_, p_225598_4_, p_225598_5_+2, p_225598_6_, p_225598_7_, p_225598_8_);
-        p_225598_1_.popPose();
+    public void renderToBuffer(@Nonnull MatrixStack p_225598_1_, @Nonnull IVertexBuilder p_225598_2_, int p_225598_3_, int p_225598_4_, float p_225598_5_, float p_225598_6_, float p_225598_7_, float p_225598_8_) {
+        this.box.setPos(1,1.5f,0.5f);
+        this.box.render(p_225598_1_, p_225598_2_, p_225598_3_, p_225598_4_, p_225598_5_+2, p_225598_6_, p_225598_7_, p_225598_8_);
     }
 }
