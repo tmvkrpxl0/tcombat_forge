@@ -8,8 +8,9 @@ import net.minecraftforge.fml.LogicalSide
 import net.minecraftforge.fml.server.ServerLifecycleHooks
 
 abstract class AbstractPassiveSkill : AbstractSkill() {
+    private var enabled:Boolean = true
     private fun tick(event: ServerTickEvent) {
-        if (event.side == LogicalSide.SERVER && event.phase == TickEvent.Phase.START) {
+        if (enabled && event.side == LogicalSide.SERVER && event.phase == TickEvent.Phase.START) {
             val server = ServerLifecycleHooks.getCurrentServer()
             for (player in server.playerList.players) {
                 onTick(event, player)

@@ -15,14 +15,17 @@ import net.minecraft.util.math.AxisAlignedBB
 import kotlin.math.cos
 import kotlin.math.sin
 
-class ReflectArrow : AbstractActiveSkill() {
+object ReflectArrow : AbstractActiveSkill() {
+    private val sizeBig = AxisAlignedBB.withSizeAtOrigin(30.0, 30.0, 30.0)
+    private val sizeSmall = AxisAlignedBB.withSizeAtOrigin(0.2, 0.2, 0.2)
+    private val NAME = ResourceLocation(TCombatMain.MODID, "reflect_arrow")
     override fun execute(player: ServerPlayerEntity): Boolean {
         if (!player.entityWorld.isRemote) {
             val axisAlignedBB = sizeBig.offset(player.positionVec)
             val list = player.world.getEntitiesInAABBexcluding(
                 player, axisAlignedBB
             ) { o: Entity ->
-                o is ProjectileEntity && o.getDistanceSq(player) < 15 * 15 && player.canEntityBeSeen(o) && TCombatUtil.getEntityToEntityAngle(
+                o is ProjectileEntity && o.shooter != player && o.getDistanceSq(player) < 15 * 15 && player.canEntityBeSeen(o) && TCombatUtil.getEntityToEntityAngle(
                     o,
                     player
                 ) < 30 && (o !is ArrowEntity ||
@@ -63,13 +66,6 @@ class ReflectArrow : AbstractActiveSkill() {
         return true
     }
 
-    override fun getRegistryName(): ResourceLocation {
-        return NAME
-    }
+    override fun getRegistryName(): ResourceLocation = NAME
 
-    companion object {
-        private val sizeBig = AxisAlignedBB.withSizeAtOrigin(30.0, 30.0, 30.0)
-        private val sizeSmall = AxisAlignedBB.withSizeAtOrigin(0.2, 0.2, 0.2)
-        private val NAME = ResourceLocation(TCombatMain.MODID, "reflect_arrow")
-    }
 }

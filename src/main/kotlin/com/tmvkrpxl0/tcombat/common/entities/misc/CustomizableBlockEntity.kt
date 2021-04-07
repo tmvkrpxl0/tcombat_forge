@@ -78,6 +78,7 @@ class CustomizableBlockEntity : Entity {
     }
 
     companion object {
-        private val OWNER_ID: DataParameter<Int> = EntityDataManager.createKey(IronGolemEntity::class.java, DataSerializers.VARINT)
+        private val OWNER_ID: DataParameter<Int> =
+            EntityDataManager.createKey(IronGolemEntity::class.java, DataSerializers.VARINT)
     }
 }

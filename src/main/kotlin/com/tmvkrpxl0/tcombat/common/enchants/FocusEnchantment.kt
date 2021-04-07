@@ -18,8 +18,4 @@ class FocusEnchantment(rarityIn: Rarity, vararg slots: EquipmentSlotType) :
     override fun getMaxLevel(): Int {
         return 1
     }
-
-    override fun canApplyTogether(@Nonnull ench: Enchantment): Boolean {
-        return super.canApplyTogether(ench) && ench !== TCombatEnchants.SNIPE.get()
-    }
 }

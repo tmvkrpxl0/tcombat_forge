@@ -3,7 +3,7 @@ package com.tmvkrpxl0.tcombat.client.key
 import com.tmvkrpxl0.tcombat.common.network.packets.SkillRequestPacket
 import com.tmvkrpxl0.tcombat.common.network.packets.TCombatPacketHandler
 import com.tmvkrpxl0.tcombat.common.network.packets.TargetSetPacket
-import com.tmvkrpxl0.tcombat.common.skills.Skills
+import com.tmvkrpxl0.tcombat.common.skills.ReflectArrow
 import net.minecraft.client.Minecraft
 import net.minecraft.client.settings.KeyBinding
 import net.minecraft.client.util.InputMappings
@@ -17,14 +17,35 @@ import org.lwjgl.glfw.GLFW
 import java.util.*
 
 class KeyHandler : AbstractKeyHandler(BINDINGS) {
-    private fun onKeyInput() {
-        keyTick()
+    companion object{
+        private const val CATEGORY = "com.tmvkrpxl0 combat"
+        val KB_REFLECT_ARROW = KeyBinding(
+            "Reflect Arrow",
+            KeyConflictContext.IN_GAME,
+            InputMappings.Type.KEYSYM,
+            GLFW.GLFW_KEY_C,
+            CATEGORY
+        )
+        val KB_SET_TARGETS =
+            KeyBinding("Set targets", KeyConflictContext.IN_GAME, InputMappings.Type.KEYSYM, GLFW.GLFW_KEY_X, CATEGORY)
+        val BINDINGS = Builder(10)
+            .addBinding(KB_REFLECT_ARROW, false)
+            .addBinding(KB_SET_TARGETS, false)
     }
+
+    init {
+        ClientRegistry.registerKeyBinding(KB_REFLECT_ARROW)
+        ClientRegistry.registerKeyBinding(KB_SET_TARGETS)
+        MinecraftForge.EVENT_BUS.addListener { event: KeyInputEvent -> onKeyInput() }
+    }
+
+    private fun onKeyInput() = keyTick()
+
 
     override fun keyDown(kb: KeyBinding, isRepeat: Boolean) {
         val player = Minecraft.getInstance().player ?: return
         if (kb === KB_REFLECT_ARROW) {
-            TCombatPacketHandler.INSTANCE.sendToServer(SkillRequestPacket(Skills.REFLECT_ARROW))
+            TCombatPacketHandler.INSTANCE.sendToServer(SkillRequestPacket(ReflectArrow))
         } else if (kb === KB_SET_TARGETS) {
             val world = player.world
             val axisAlignedBB = AxisAlignedBB.withSizeAtOrigin(100.0, 100.0, 100.0).offset(player.position)
@@ -46,27 +67,5 @@ class KeyHandler : AbstractKeyHandler(BINDINGS) {
     }
 
     override fun keyUp(kb: KeyBinding) {}
-
-    companion object {
-        //This class is based on MekanismKeyHandler.java from mekanism
-        private const val CATEGORY = "com.tmvkrpxl0 combat"
-        val KB_REFLECT_ARROW = KeyBinding(
-            "Reflect Arrow",
-            KeyConflictContext.IN_GAME,
-            InputMappings.Type.KEYSYM,
-            GLFW.GLFW_KEY_C,
-            CATEGORY
-        )
-        val KB_SET_TARGETS =
-            KeyBinding("Set targets", KeyConflictContext.IN_GAME, InputMappings.Type.KEYSYM, GLFW.GLFW_KEY_X, CATEGORY)
-        val BINDINGS = Builder(10)
-            .addBinding(KB_REFLECT_ARROW, false)
-            .addBinding(KB_SET_TARGETS, false)
-    }
-
-    init {
-        ClientRegistry.registerKeyBinding(KB_REFLECT_ARROW)
-        ClientRegistry.registerKeyBinding(KB_SET_TARGETS)
-        MinecraftForge.EVENT_BUS.addListener { event: KeyInputEvent -> onKeyInput() }
-    }
+    //This class is based on MekanismKeyHandler.java from mekanism
 }

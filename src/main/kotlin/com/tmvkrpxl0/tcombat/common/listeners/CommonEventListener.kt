@@ -3,6 +3,8 @@ package com.tmvkrpxl0.tcombat.common.listeners
 import com.tmvkrpxl0.tcombat.TCombatMain
 import com.tmvkrpxl0.tcombat.common.enchants.TCombatEnchants
 import com.tmvkrpxl0.tcombat.common.entities.misc.CustomizableBlockEntity
+import com.tmvkrpxl0.tcombat.common.network.packets.SpawnCBPacket
+import com.tmvkrpxl0.tcombat.common.network.packets.TCombatPacketHandler
 import com.tmvkrpxl0.tcombat.common.util.TCombatUtil
 import net.minecraft.block.Blocks
 import net.minecraft.block.FlowingFluidBlock
@@ -11,14 +13,16 @@ import net.minecraft.enchantment.EnchantmentHelper
 import net.minecraft.enchantment.Enchantments
 import net.minecraft.entity.Entity
 import net.minecraft.entity.LivingEntity
+import net.minecraft.entity.ai.attributes.Attributes
+import net.minecraft.entity.projectile.AbstractArrowEntity
 import net.minecraft.entity.projectile.ArrowEntity
 import net.minecraft.fluid.FlowingFluid
 import net.minecraft.item.BucketItem
 import net.minecraft.item.Items
+import net.minecraft.potion.EffectInstance
 import net.minecraft.potion.Effects
 import net.minecraft.util.Direction
 import net.minecraft.util.EntityDamageSource
-import net.minecraft.util.IndirectEntityDamageSource
 import net.minecraft.util.math.BlockPos
 import net.minecraft.util.math.EntityRayTraceResult
 import net.minecraft.util.math.MathHelper
@@ -36,7 +40,6 @@ import net.minecraftforge.event.entity.ProjectileImpactEvent.Arrow
 import net.minecraftforge.event.entity.living.LivingDamageEvent
 import net.minecraftforge.event.entity.living.LivingEntityUseItemEvent
 import net.minecraftforge.event.entity.living.LivingEntityUseItemEvent.Tick
-import net.minecraftforge.event.entity.living.LivingKnockBackEvent
 import net.minecraftforge.event.entity.player.PlayerInteractEvent.LeftClickBlock
 import net.minecraftforge.eventbus.api.SubscribeEvent
 import net.minecraftforge.fml.LogicalSide
@@ -52,14 +55,13 @@ import java.util.*
 object CommonEventListener {
     private val multishotTracker: MutableMap<LivingEntity, ArrowCounter> = HashMap()
     private val instaArrows: MutableSet<ArrowEntity> = HashSet()
-    private val snipeArrows: MutableMap<ArrowEntity, Double> = HashMap()
     val explosionImmune: MutableSet<LivingEntity> = HashSet()
+
     @SubscribeEvent
     fun serverTickEvent(event: ServerTickEvent) {
         if (event.side == LogicalSide.SERVER && event.phase == TickEvent.Phase.START) {
             multishotTracker.clear()
             instaArrows.removeIf { e: ArrowEntity -> e.isOnGround || !e.isAlive }
-            snipeArrows.keys.removeIf { arrowEntity: ArrowEntity -> !arrowEntity.isAlive || arrowEntity.isOnGround }
             explosionImmune.clear()
             for (world in ServerLifecycleHooks.getCurrentServer().worlds) {
                 for (entity in world.entitiesIteratable) {
@@ -82,9 +84,6 @@ object CommonEventListener {
         }
     }
 
-    fun onKnockBack(event: LivingKnockBackEvent) {
-        TCombatMain.LOGGER.info("KNOCKBACK!")
-    }
 
     private fun freezeGround(living: Entity, worldIn: World, pos: BlockPos, level: Int) {
         val blockstate = Blocks.FROSTED_ICE.defaultState
@@ -139,17 +138,12 @@ object CommonEventListener {
 
     @SubscribeEvent
     fun onEntityDamage(event: LivingDamageEvent) {
-        if (event.source.damageType == "arrow") {
-            val source = event.source as IndirectEntityDamageSource
-            if (snipeArrows.containsKey(source.immediateSource)) {
-                val arrowEntity = source.immediateSource as ArrowEntity
-                event.amount = (arrowEntity.damage * snipeArrows.remove(arrowEntity)!!).toFloat()
-            }
-        } else if (event.source.damageType == "explosion.player") {
+        if (event.source.damageType == "explosion.player") {
             val entityDamageSource = event.source as EntityDamageSource
             if (entityDamageSource.isExplosion) {
                 if (explosionImmune.contains(entityDamageSource.immediateSource)) {
                     event.amount = 0f
+                    event.isCanceled = true
                 }
             }
         }
@@ -198,16 +192,8 @@ object CommonEventListener {
                 if (fluid is FlowingFluid) {
                     fluid = fluid.flowingFluid
                     if (event.entityLiving.isSneaking) {
-                        val blockEntity = CustomizableBlockEntity(
-                            world,
-                            blockPos.x.toDouble(),
-                            blockPos.y.toDouble(),
-                            blockPos.z.toDouble(),
-                            Blocks.STONE.defaultState /*fluid.defaultFluidState().createLegacyBlock()*/,
-                            event.player,
-                            false
-                        )
-                        world.addEntity(blockEntity)
+                        val packet = SpawnCBPacket(blockPos.x.toDouble(), blockPos.y.toDouble(), blockPos.z.toDouble(), blockState, false, 1.0, 1.0)
+                        TCombatPacketHandler.INSTANCE.sendToServer(packet)
                     } else {
                         if (blockState.isReplaceable(fluid) || blockState.isAir(world, blockPos)) {
                             TCombatUtil.emptyBucket(bucketItem, event.player, world, blockPos, null, fluid)
@@ -220,69 +206,62 @@ object CommonEventListener {
 
     @SubscribeEvent
     fun onEntitySpawn(event: EntityJoinWorldEvent) {
-        if (!event.entity.world.isRemote() && event.entity is ArrowEntity) {
-            val arrowEntity = event.entity as ArrowEntity
-            if (arrowEntity.shooter is LivingEntity) {
-                val shooter = arrowEntity.shooter as LivingEntity
-                val stack =
-                    if (shooter.heldItemMainhand.item === Items.CROSSBOW) shooter.heldItemMainhand else shooter.heldItemOffhand
-                if (stack.item === Items.CROSSBOW) {
-                    val enchants = EnchantmentHelper.getEnchantments(stack)
-                    if (enchants.containsKey(TCombatEnchants.FOCUS.get())) {
-                        instaArrows.add(arrowEntity)
-                        if (enchants.containsKey(Enchantments.MULTISHOT)) {
-                            if (!multishotTracker.containsKey(shooter)) {
-                                multishotTracker[shooter] = ArrowCounter()
-                            }
-                            val counter = multishotTracker[shooter]
-                            if (counter!!.count == 3) return
-                            counter.count(arrowEntity)
-                            if (counter.count == 3) {
-                                val entities = counter.arrows
-                                val vector3d1 = shooter.getUpVector(1.0f)
-                                val quaternion = Quaternion(Vector3f(vector3d1), 0F, true)
-                                val vector3d = shooter.getLook(1.0f)
-                                val vector3f = Vector3f(vector3d)
-                                vector3f.transform(quaternion)
-                                val originalVector = entities[0]!!.motion
-                                for (i in 1..2) {
-                                    entities[i]!!.setMotion(
+        if(!event.entity.world.isRemote()){
+            if(event.entity is AbstractArrowEntity) {
+                val arrowEntity = event.entity as AbstractArrowEntity
+                if (arrowEntity.shooter is LivingEntity) {
+                    val shooter = arrowEntity.shooter as LivingEntity
+                    if(arrowEntity is ArrowEntity){
+                        val stack =
+                            if (shooter.heldItemMainhand.item === Items.CROSSBOW) shooter.heldItemMainhand else shooter.heldItemOffhand
+                        if (stack.item === Items.CROSSBOW) {
+                            val enchants = EnchantmentHelper.getEnchantments(stack)
+                            if (enchants.containsKey(TCombatEnchants.FOCUS.get())) {
+                                instaArrows.add(arrowEntity)
+                                if (enchants.containsKey(Enchantments.MULTISHOT)) {
+                                    if (!multishotTracker.containsKey(shooter)) {
+                                        multishotTracker[shooter] = ArrowCounter()
+                                    }
+                                    val counter = multishotTracker[shooter]
+                                    if (counter!!.count == 3) return
+                                    counter.count(arrowEntity)
+                                    if (counter.count == 3) {
+                                        val entities = counter.arrows
+                                        val vector3d1 = shooter.getUpVector(1.0f)
+                                        val quaternion = Quaternion(Vector3f(vector3d1), 0F, true)
+                                        val vector3d = shooter.getLook(1.0f)
+                                        val vector3f = Vector3f(vector3d)
+                                        vector3f.transform(quaternion)
+                                        val originalVector = entities[0]!!.motion
+                                        for (i in 1..2) {
+                                            entities[i]!!.setMotion(
+                                                vector3f.x * originalVector.length(),
+                                                vector3f.y * originalVector.length(),
+                                                vector3f.z * originalVector.length()
+                                            )
+                                            entities[i]!!.velocityChanged = true
+                                        }
+                                    }
+                                } else {
+                                    val vector3d1 = shooter.getUpVector(1.0f)
+                                    val quaternion = Quaternion(Vector3f(vector3d1), 0F, true)
+                                    val vector3d = shooter.getLook(1.0f)
+                                    val vector3f = Vector3f(vector3d)
+                                    vector3f.transform(quaternion)
+                                    val originalVector = arrowEntity.motion
+                                    arrowEntity.setMotion(
                                         vector3f.x * originalVector.length(),
                                         vector3f.y * originalVector.length(),
                                         vector3f.z * originalVector.length()
                                     )
-                                    entities[i]!!.velocityChanged = true
+                                    arrowEntity.velocityChanged = true
                                 }
                             }
-                        } else {
-                            val vector3d1 = shooter.getUpVector(1.0f)
-                            val quaternion = Quaternion(Vector3f(vector3d1), 0F, true)
-                            val vector3d = shooter.getLook(1.0f)
-                            val vector3f = Vector3f(vector3d)
-                            vector3f.transform(quaternion)
-                            val originalVector = arrowEntity.motion
-                            arrowEntity.setMotion(
-                                vector3f.x * originalVector.length(),
-                                vector3f.y * originalVector.length(),
-                                vector3f.z * originalVector.length()
-                            )
-                            arrowEntity.velocityChanged = true
+
+                            if (enchants.containsKey(TCombatEnchants.CROSSBOW_FLAME.get())) {
+                                arrowEntity.setFire(100)
+                            }
                         }
-                    }
-                    if (enchants.containsKey(TCombatEnchants.SNIPE.get())) {
-                        val vector3d1 = shooter.getUpVector(1.0f)
-                        val quaternion = Quaternion(Vector3f(vector3d1), 0F, true)
-                        val vector3d = shooter.getLook(1.0f)
-                        val vector3f = Vector3f(vector3d)
-                        vector3f.transform(quaternion)
-                        val originalVector = arrowEntity.motion
-                        snipeArrows[arrowEntity] = originalVector.length()
-                        val length = originalVector.length() * 10
-                        arrowEntity.setMotion(vector3f.x * length, vector3f.y * length, vector3f.z * length)
-                        arrowEntity.velocityChanged = true
-                    }
-                    if (enchants.containsKey(TCombatEnchants.CROSSBOW_FLAME.get())) {
-                        arrowEntity.setFire(100)
                     }
                 }
             }

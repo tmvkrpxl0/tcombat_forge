@@ -1,5 +1,6 @@
 package com.tmvkrpxl0.tcombat.common.items.projectile
 
+import com.tmvkrpxl0.tcombat.common.entities.TCombatEntityTypes
 import com.tmvkrpxl0.tcombat.common.entities.projectile.TNTArrowEntity
 import net.minecraft.block.DispenserBlock
 import net.minecraft.dispenser.IPosition
@@ -10,31 +11,18 @@ import net.minecraft.entity.projectile.ProjectileEntity
 import net.minecraft.item.ArrowItem
 import net.minecraft.item.ItemStack
 import net.minecraft.world.World
-import javax.annotation.Nonnull
 
-class TNTArrow(properties: Properties) : ArrowItem(properties) {
-    @Nonnull
+class TNTArrowItem(properties: Properties) : ArrowItem(properties) {
+
     override fun createArrow(
-        @Nonnull worldIn: World,
-        @Nonnull stack: ItemStack,
+        worldIn: World,
+        stack: ItemStack,
         shooter: LivingEntity
-    ): AbstractArrowEntity {
-        val pos = shooter.positionVec
-        val entity = TNTArrowEntity(worldIn, pos.x, pos.y, pos.z)
-        entity.shooter = shooter
-        return entity
-    }
+    ): AbstractArrowEntity = TNTArrowEntity(TCombatEntityTypes.TNT_ARROW.get(), worldIn, shooter)
 
     init {
         DispenserBlock.registerDispenseBehavior(this, object : ProjectileDispenseBehavior() {
-            @Nonnull
-            override fun getProjectileEntity(
-                @Nonnull worldIn: World,
-                @Nonnull position: IPosition,
-                @Nonnull stackIn: ItemStack
-            ): ProjectileEntity {
-                return TNTArrowEntity(worldIn, position.x, position.y, position.z)
-            }
+            override fun getProjectileEntity(worldIn: World, position: IPosition, stackIn: ItemStack): ProjectileEntity = TNTArrowEntity(worldIn, position.x, position.y, position.z)
         })
     }
 }

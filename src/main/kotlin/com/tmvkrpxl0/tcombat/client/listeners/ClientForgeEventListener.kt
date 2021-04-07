@@ -5,7 +5,7 @@ import net.minecraftforge.api.distmarker.Dist
 import net.minecraftforge.fml.common.Mod.EventBusSubscriber
 
 @EventBusSubscriber(modid = TCombatMain.MODID, bus = EventBusSubscriber.Bus.FORGE, value = [Dist.CLIENT])
-class ClientForgeEventListener { /*private static final HashSet<LivingEntity> added = new HashSet<>();
+object ClientForgeEventListener { /*private static final HashSet<LivingEntity> added = new HashSet<>();
     private static LivingEntity temp;
 
     @SubscribeEvent

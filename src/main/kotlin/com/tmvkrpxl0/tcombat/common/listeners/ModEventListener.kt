@@ -2,7 +2,9 @@ package com.tmvkrpxl0.tcombat.common.listeners
 
 import com.tmvkrpxl0.tcombat.TCombatMain
 import com.tmvkrpxl0.tcombat.common.skills.AbstractSkill
-import com.tmvkrpxl0.tcombat.common.skills.Skills
+import com.tmvkrpxl0.tcombat.common.skills.ArrowSense
+import com.tmvkrpxl0.tcombat.common.skills.AutoBridge
+import com.tmvkrpxl0.tcombat.common.skills.ReflectArrow
 import net.minecraft.util.ResourceLocation
 import net.minecraftforge.api.distmarker.Dist
 import net.minecraftforge.event.RegistryEvent.NewRegistry
@@ -11,7 +13,7 @@ import net.minecraftforge.fml.common.Mod.EventBusSubscriber
 import net.minecraftforge.registries.RegistryBuilder
 
 @EventBusSubscriber(
-    modid = TCombatMain.Companion.MODID,
+    modid = TCombatMain.MODID,
     bus = EventBusSubscriber.Bus.MOD,
     value = [Dist.CLIENT, Dist.DEDICATED_SERVER]
 )
@@ -22,7 +24,7 @@ object ModEventListener {
         builder.setName(ResourceLocation(TCombatMain.MODID, "skill_registry"))
         builder.type = AbstractSkill::class.java
         val registry = builder.create()
-        registry.registerAll(Skills.ARROW_SENSE, Skills.REFLECT_ARROW, Skills.AUTO_BRIDGE)
+        registry.registerAll(ArrowSense, ReflectArrow, AutoBridge)
         TCombatMain.LOGGER.info("Registry Created!")
     }
 }

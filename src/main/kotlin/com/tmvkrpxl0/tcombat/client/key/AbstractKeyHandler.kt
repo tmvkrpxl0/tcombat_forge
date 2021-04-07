@@ -25,6 +25,39 @@ abstract class AbstractKeyHandler(bindings: Builder) {
      * Whether keys send repeated KeyDown pseudo-messages
      */
     private val repeatings: BitSet = bindings.repeatFlags
+
+    companion object {
+        fun getIsKeyPressed(keyBinding: KeyBinding): Boolean {
+            if (keyBinding.isKeyDown) {
+                return true
+            }
+            return if (keyBinding.keyConflictContext.isActive && keyBinding.keyModifier.isActive(keyBinding.keyConflictContext)) {
+                //Manually check in case keyBinding#pressed just never got a chance to be updated
+                isKeyDown(keyBinding)
+            } else KeyModifier.isKeyCodeModifier(keyBinding.key) && isKeyDown(
+                keyBinding
+            )
+            //If we failed, due to us being a key modifier as our key, check the old way
+        }
+
+        private fun isKeyDown(keyBinding: KeyBinding): Boolean {
+            val key = keyBinding.key
+            val keyCode = key.keyCode
+            if (keyCode != InputMappings.INPUT_INVALID.keyCode) {
+                val windowHandle = Minecraft.getInstance().mainWindow.handle
+                try {
+                    if (key.type == InputMappings.Type.KEYSYM) {
+                        return InputMappings.isKeyDown(windowHandle, keyCode)
+                    } else if (key.type == InputMappings.Type.MOUSE) {
+                        return GLFW.glfwGetMouseButton(windowHandle, keyCode) == GLFW.GLFW_PRESS
+                    }
+                } catch (ignored: Exception) {
+                }
+            }
+            return false
+        }
+    }
+
     fun keyTick() {
         for (i in keyBindings.indices) {
             val keyBinding = keyBindings[i]
@@ -65,38 +98,6 @@ abstract class AbstractKeyHandler(bindings: Builder) {
 
         init {
             bindings = ArrayList(expectedCapacity)
-        }
-    }
-
-    companion object {
-        fun getIsKeyPressed(keyBinding: KeyBinding): Boolean {
-            if (keyBinding.isKeyDown) {
-                return true
-            }
-            return if (keyBinding.keyConflictContext.isActive && keyBinding.keyModifier.isActive(keyBinding.keyConflictContext)) {
-                //Manually check in case keyBinding#pressed just never got a chance to be updated
-                isKeyDown(keyBinding)
-            } else KeyModifier.isKeyCodeModifier(keyBinding.key) && isKeyDown(
-                keyBinding
-            )
-            //If we failed, due to us being a key modifier as our key, check the old way
-        }
-
-        private fun isKeyDown(keyBinding: KeyBinding): Boolean {
-            val key = keyBinding.key
-            val keyCode = key.keyCode
-            if (keyCode != InputMappings.INPUT_INVALID.keyCode) {
-                val windowHandle = Minecraft.getInstance().mainWindow.handle
-                try {
-                    if (key.type == InputMappings.Type.KEYSYM) {
-                        return InputMappings.isKeyDown(windowHandle, keyCode)
-                    } else if (key.type == InputMappings.Type.MOUSE) {
-                        return GLFW.glfwGetMouseButton(windowHandle, keyCode) == GLFW.GLFW_PRESS
-                    }
-                } catch (ignored: Exception) {
-                }
-            }
-            return false
         }
     }
 

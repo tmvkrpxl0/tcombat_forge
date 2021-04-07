@@ -1,4 +1,4 @@
 {
   "replace":false,
-  "values":["tcombat:tnt_arrow"]
+  "values":["tcombat:tnt_arrow", "tcombat:snipe_arrow"]
 }

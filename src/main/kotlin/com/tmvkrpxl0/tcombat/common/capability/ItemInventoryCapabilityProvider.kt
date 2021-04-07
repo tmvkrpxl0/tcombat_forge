@@ -10,14 +10,15 @@ import net.minecraftforge.items.ItemStackHandler
 import javax.annotation.Nonnull
 
 class ItemInventoryCapabilityProvider : ICapabilitySerializable<INBT> {
+    private val itemStackHandler = ItemStackHandler(9)
+
     @Nonnull
-    override fun <T: Any> getCapability(@Nonnull cap: Capability<T>, unused: Direction?): LazyOptional<T> {
+    override fun <T : Any> getCapability(@Nonnull cap: Capability<T>, unused: Direction?): LazyOptional<T> {
         return if (CapabilityItemHandler.ITEM_HANDLER_CAPABILITY === cap) {
             LazyOptional.of { return@of itemStackHandler as T }
         } else LazyOptional.empty()
     }
 
-    private val itemStackHandler = ItemStackHandler(9)
     override fun serializeNBT(): INBT? {
         return CapabilityItemHandler.ITEM_HANDLER_CAPABILITY.writeNBT(itemStackHandler, null)
     }

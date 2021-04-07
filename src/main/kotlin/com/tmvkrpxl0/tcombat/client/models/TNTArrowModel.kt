@@ -9,6 +9,15 @@ import javax.annotation.Nonnull
 
 class TNTArrowModel : EntityModel<TNTArrowEntity>() {
     private val box: ModelRenderer = ModelRenderer(this, 0, 0)
+
+    init {
+        box.setTextureSize(64, 64)
+        textureHeight = 64
+        textureWidth = 64
+        box.addBox(-8f, -1f, -1f, 8f, 1f, 1f, 0f, 0f, 0f)
+        box.showModel = true
+    }
+
     override fun setRotationAngles(
         @Nonnull entityIn: TNTArrowEntity,
         limbSwing: Float,
@@ -33,11 +42,4 @@ class TNTArrowModel : EntityModel<TNTArrowEntity>() {
         box.render(matrixStackIn, bufferIn, packedLightIn, packedOverlayIn, red + 2, green, blue, alpha)
     }
 
-    init {
-        box.setTextureSize(64, 64)
-        textureHeight = 64
-        textureWidth = 64
-        box.addBox(-8f, -1f, -1f, 8f, 1f, 1f, 0f, 0f, 0f)
-        box.showModel = true
-    }
 }

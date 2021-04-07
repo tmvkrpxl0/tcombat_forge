@@ -19,6 +19,9 @@ import javax.annotation.Nonnull
 
 class BlockEntityRenderer(renderManager: EntityRendererManager) :
     EntityRenderer<CustomizableBlockEntity>(renderManager) {
+    init {
+        shadowSize = 0.5f
+    }
     override fun render(
         entityIn: CustomizableBlockEntity,
         entityYaw: Float,
@@ -63,9 +66,5 @@ class BlockEntityRenderer(renderManager: EntityRendererManager) :
     @Nonnull
     override fun getEntityTexture(@Nonnull entity: CustomizableBlockEntity): ResourceLocation {
         return AtlasTexture.LOCATION_BLOCKS_TEXTURE
-    }
-
-    init {
-        shadowSize = 0.5f
     }
 }

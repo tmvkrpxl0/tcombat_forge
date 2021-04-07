@@ -2,6 +2,7 @@ package com.tmvkrpxl0.tcombat.common.entities
 
 import com.tmvkrpxl0.tcombat.TCombatMain
 import com.tmvkrpxl0.tcombat.common.entities.misc.CustomizableBlockEntity
+import com.tmvkrpxl0.tcombat.common.entities.projectile.SnipeArrowEntity
 import com.tmvkrpxl0.tcombat.common.entities.projectile.TNTArrowEntity
 import net.minecraft.entity.EntityClassification
 import net.minecraft.entity.EntityType
@@ -13,7 +14,8 @@ import net.minecraftforge.registries.ForgeRegistries
 
 class TCombatEntityTypes(eventBus: IEventBus) {
     companion object {
-        val ENTITIES: DeferredRegister<EntityType<*>> = DeferredRegister.create(ForgeRegistries.ENTITIES, TCombatMain.MODID)
+        val ENTITIES: DeferredRegister<EntityType<*>> =
+            DeferredRegister.create(ForgeRegistries.ENTITIES, TCombatMain.MODID)
         val CUSTOMIZABLE_BLOCK_ENTITY: RegistryObject<EntityType<CustomizableBlockEntity>> = ENTITIES.register(
             "customizable_block_entity"
         ) {
@@ -25,12 +27,15 @@ class TCombatEntityTypes(eventBus: IEventBus) {
         val TNT_ARROW: RegistryObject<EntityType<TNTArrowEntity>> = ENTITIES.register(
             "tnt_arrow"
         ) {
-            EntityType.Builder.create({ fireChargeArrowEntityType: EntityType<TNTArrowEntity>, world: World ->
+            EntityType.Builder.create({ tntArrowType: EntityType<TNTArrowEntity>, world: World ->
                 TNTArrowEntity(
-                    fireChargeArrowEntityType,
+                    tntArrowType,
                     world
                 )
             }, EntityClassification.MISC).size(0.5f, 0.5f).build("tnt_arrow")
+        }
+        val SNIPE_ARROW: RegistryObject<EntityType<SnipeArrowEntity>> = ENTITIES.register("snipe_arrow"){
+            EntityType.Builder.create({snipeArrowType: EntityType<SnipeArrowEntity>, world: World -> SnipeArrowEntity(snipeArrowType, world)}, EntityClassification.MISC).size(0.5f, 0.5f).build("snipe_arrow")
         }
     }
 

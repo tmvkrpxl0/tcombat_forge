@@ -11,7 +11,8 @@ import net.minecraft.util.ResourceLocation
 import net.minecraft.util.math.BlockPos
 import net.minecraftforge.event.TickEvent.ServerTickEvent
 
-class AutoBridge : AbstractPassiveSkill() {
+object AutoBridge : AbstractPassiveSkill() {
+    private val NAME = ResourceLocation(TCombatMain.MODID, "auto_bridge")
     override fun onTick(event: ServerTickEvent, player: PlayerEntity): Boolean {
         val mainHand = player.heldItemMainhand
         val offHand = player.heldItemOffhand
@@ -45,11 +46,5 @@ class AutoBridge : AbstractPassiveSkill() {
         return false
     }
 
-    override fun getRegistryName(): ResourceLocation {
-        return NAME
-    }
-
-    companion object {
-        private val NAME = ResourceLocation(TCombatMain.Companion.MODID, "auto_bridge")
-    }
+    override fun getRegistryName(): ResourceLocation = NAME
 }

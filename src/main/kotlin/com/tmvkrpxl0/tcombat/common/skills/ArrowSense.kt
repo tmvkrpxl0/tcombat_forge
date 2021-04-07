@@ -13,7 +13,7 @@ import net.minecraft.util.SoundEvents
 import net.minecraft.util.math.AxisAlignedBB
 import net.minecraftforge.event.TickEvent.ServerTickEvent
 
-class ArrowSense : AbstractPassiveSkill() {
+object ArrowSense : AbstractPassiveSkill() {
     private val size = AxisAlignedBB.withSizeAtOrigin(30.0, 30.0, 30.0)
     override fun onTick(event: ServerTickEvent, player: PlayerEntity): Boolean {
         if (!player.entityWorld.isRemote) {
@@ -21,7 +21,7 @@ class ArrowSense : AbstractPassiveSkill() {
             val list = player.world.getEntitiesInAABBexcluding(
                 player, axisAlignedBB
             ) { o: Entity ->
-                o is ProjectileEntity && o.getDistanceSq(player) < 15 * 15 && player.canEntityBeSeen(o) && TCombatUtil.getEntityToEntityAngle(
+                o is ProjectileEntity && o.shooter != player && o.getDistanceSq(player) < 15 * 15 && player.canEntityBeSeen(o) && TCombatUtil.getEntityToEntityAngle(
                     o,
                     player
                 ) < 30 && (o !is ArrowEntity ||
@@ -33,11 +33,6 @@ class ArrowSense : AbstractPassiveSkill() {
         return true
     }
 
-    override fun getRegistryName(): ResourceLocation {
-        return NAME
-    }
-
-    companion object {
-        private val NAME = ResourceLocation(TCombatMain.MODID, "arrow_sense")
-    }
+    override fun getRegistryName(): ResourceLocation = NAME
+    private val NAME = ResourceLocation(TCombatMain.MODID, "arrow_sense")
 }

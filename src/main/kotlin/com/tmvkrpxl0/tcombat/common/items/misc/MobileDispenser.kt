@@ -91,6 +91,7 @@ class MobileDispenser(properties: Properties) : Item(properties) {
                                 val projectileEntity: ProjectileEntity =
                                     Util.make(PotionEntity(worldIn, posVec.x, posVec.y, posVec.z),
                                         { potion: PotionEntity -> potion.item = itemStack })
+                                projectileEntity.shooter = playerEntity
                                 val projectileUncertainty = (6.0 * 0.5).toFloat()
                                 val projectilePower = (1.1 * 1.25).toFloat()
                                 val lookAngle = playerEntity.lookVec
@@ -101,7 +102,6 @@ class MobileDispenser(properties: Properties) : Item(properties) {
                                     projectilePower,
                                     projectileUncertainty
                                 )
-                                projectileEntity.shooter = playerEntity
                                 worldIn.addEntity(projectileEntity)
                                 itemStack.shrink(1)
                                 handler.setStackInSlot(i, itemStack)
