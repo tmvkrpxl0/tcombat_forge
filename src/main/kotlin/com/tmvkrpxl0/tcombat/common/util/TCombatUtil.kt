@@ -1,9 +1,7 @@
 package com.tmvkrpxl0.tcombat.common.util
 
 import com.google.common.primitives.Doubles
-import net.minecraft.block.Blocks
-import net.minecraft.block.FlowingFluidBlock
-import net.minecraft.block.ILiquidContainer
+import net.minecraft.block.*
 import net.minecraft.block.material.Material
 import net.minecraft.enchantment.Enchantments
 import net.minecraft.entity.Entity
@@ -16,6 +14,8 @@ import net.minecraft.fluid.Fluids
 import net.minecraft.item.BucketItem
 import net.minecraft.nbt.CompoundNBT
 import net.minecraft.nbt.NBTUtil
+import net.minecraft.network.PacketBuffer
+import net.minecraft.network.datasync.IDataSerializer
 import net.minecraft.particles.ParticleTypes
 import net.minecraft.state.Property
 import net.minecraft.tags.FluidTags
@@ -259,5 +259,49 @@ object TCombatUtil {
 
     fun <T : Comparable<T>?> getName(p_190010_0_: Property<T>, p_190010_1_: Comparable<*>): String {
         return p_190010_0_.getName(p_190010_1_ as T)
+    }
+
+    val UNIQUE_ID: IDataSerializer<UUID> = object : IDataSerializer<UUID> {
+        override fun write(buf: PacketBuffer, value: UUID) {
+            buf.writeUniqueId(value)
+        }
+
+        override fun read(buf: PacketBuffer): UUID {
+            return buf.readUniqueId()
+        }
+
+        override fun copyValue(value: UUID): UUID {
+            return value
+        }
+    }
+
+    val BLOCK_STATE: IDataSerializer<BlockState> = object : IDataSerializer<BlockState> {
+        override fun write(buf: PacketBuffer, value: BlockState) {
+                buf.writeVarInt(Block.getStateId(value))
+            }
+
+        override fun read(buf: PacketBuffer): BlockState {
+            val i = buf.readVarInt()
+            return Block.getStateById(i)
+        }
+
+        override fun copyValue(value: BlockState): BlockState {
+            return value
+        }
+    }
+
+    val FLUID_STATE: IDataSerializer<FluidState> = object : IDataSerializer<FluidState> {
+        override fun write(buf: PacketBuffer, value: FluidState) {
+            buf.writeVarInt(Block.getStateId(value.blockState))
+        }
+
+        override fun read(buf: PacketBuffer): FluidState {
+            val i = buf.readVarInt()
+            return Block.getStateById(i).fluidState
+        }
+
+        override fun copyValue(value: FluidState): FluidState {
+            return value
+        }
     }
 }

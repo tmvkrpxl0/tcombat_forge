@@ -2,6 +2,7 @@ package com.tmvkrpxl0.tcombat.client.listeners
 
 import com.tmvkrpxl0.tcombat.TCombatMain
 import com.tmvkrpxl0.tcombat.client.renderers.BlockEntityRenderer
+import com.tmvkrpxl0.tcombat.client.renderers.FluidEntityRenderer
 import com.tmvkrpxl0.tcombat.client.renderers.TNTArrowRenderer
 import com.tmvkrpxl0.tcombat.common.entities.TCombatEntityTypes
 import net.minecraft.client.renderer.entity.EntityRendererManager
@@ -23,9 +24,10 @@ object ClientModEventListener {
             TNTArrowRenderer(renderManagerIn)
         }
         RenderingRegistry.registerEntityRenderingHandler(TCombatEntityTypes.SNIPE_ARROW.get()) { renderManager: EntityRendererManager ->
-            TippedArrowRenderer(
-                renderManager
-            )
+            TippedArrowRenderer(renderManager)
+        }
+        RenderingRegistry.registerEntityRenderingHandler(TCombatEntityTypes.CUSTOMIZABLE_FLUID_ENTITY.get()){ renderManager: EntityRendererManager ->
+            FluidEntityRenderer(renderManager)
         }
     }
 }

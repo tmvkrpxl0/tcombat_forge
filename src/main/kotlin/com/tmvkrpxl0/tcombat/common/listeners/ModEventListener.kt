@@ -5,11 +5,13 @@ import com.tmvkrpxl0.tcombat.common.skills.AbstractSkill
 import com.tmvkrpxl0.tcombat.common.skills.ArrowSense
 import com.tmvkrpxl0.tcombat.common.skills.AutoBridge
 import com.tmvkrpxl0.tcombat.common.skills.ReflectArrow
+import net.minecraft.network.datasync.DataSerializers
 import net.minecraft.util.ResourceLocation
 import net.minecraftforge.api.distmarker.Dist
 import net.minecraftforge.event.RegistryEvent.NewRegistry
 import net.minecraftforge.eventbus.api.SubscribeEvent
 import net.minecraftforge.fml.common.Mod.EventBusSubscriber
+import net.minecraftforge.registries.DataSerializerEntry
 import net.minecraftforge.registries.RegistryBuilder
 
 @EventBusSubscriber(

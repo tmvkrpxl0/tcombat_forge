@@ -30,7 +30,7 @@ class TCombatEntityTypes(eventBus: IEventBus) {
         ){
             EntityType.Builder.create(
                 {
-                    type: EntityType<CustomizableFluidEntity>, world: World -> CustomizableFluidEntity(type, world)
+                        type: EntityType<CustomizableFluidEntity>, world: World -> CustomizableFluidEntity(type, world)
                 }, EntityClassification.MISC
             ).size(1f, 1f).build("customizable_fluid_entity")
         }

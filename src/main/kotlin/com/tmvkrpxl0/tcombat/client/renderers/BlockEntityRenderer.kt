@@ -36,41 +36,33 @@ class BlockEntityRenderer(renderManager: EntityRendererManager) :
         @Nonnull bufferIn: IRenderTypeBuffer,
         packedLightIn: Int
     ) {
-        val blockState = entityIn.blockState
+        val blockState = entityIn.getBlockState()
         if (blockState.renderType == BlockRenderType.MODEL) {
             val world = entityIn.entityWorld
-            if (blockState !== world.getBlockState(entityIn.position) && blockState.renderType != BlockRenderType.INVISIBLE) {
-                matrixStackIn.push()
-                val blockPos = BlockPos(entityIn.posX, entityIn.boundingBox.maxY, entityIn.posZ)
-                matrixStackIn.translate(-0.5, 0.0, -0.5)
-                val b:Entity
-
-                val blockRendererDispatcher = Minecraft.getInstance().blockRendererDispatcher
-                TCombatMain.LOGGER.info("Start of printing:")
-                blockRendererDispatcher.getModelForState(blockState).getQuads(blockState, null, Random()).forEach { bakedQuad: BakedQuad ->
-                    TCombatMain.LOGGER.info("Packed: " + bakedQuad.vertexData)
+            matrixStackIn.push()
+            val blockPos = BlockPos(entityIn.posX, entityIn.boundingBox.maxY, entityIn.posZ)
+            matrixStackIn.translate(-0.5, 0.0, -0.5)
+            val blockRendererDispatcher = Minecraft.getInstance().blockRendererDispatcher
+            for (type in RenderType.getBlockRenderTypes()) {
+                if (RenderTypeLookup.canRenderInLayer(blockState, type)) {
+                    ForgeHooksClient.setRenderLayer(type)
+                    blockRendererDispatcher.blockModelRenderer.renderModel(
+                        world,
+                        blockRendererDispatcher.getModelForState(blockState),
+                        blockState,
+                        blockPos,
+                        matrixStackIn,
+                        bufferIn.getBuffer(type),
+                        false,
+                        Random(),
+                        2340965,
+                        OverlayTexture.NO_OVERLAY
+                    )
                 }
-                for (type in RenderType.getBlockRenderTypes()) {
-                    if (RenderTypeLookup.canRenderInLayer(blockState, type)) {
-                        ForgeHooksClient.setRenderLayer(type)
-                        blockRendererDispatcher.blockModelRenderer.renderModel(
-                            world,
-                            blockRendererDispatcher.getModelForState(blockState),
-                            blockState,
-                            blockPos,
-                            matrixStackIn,
-                            bufferIn.getBuffer(type),
-                            false,
-                            Random(),
-                            2340965,
-                            OverlayTexture.NO_OVERLAY
-                        )
-                    }
-                }
-                ForgeHooksClient.setRenderLayer(null)
-                matrixStackIn.pop()
-                super.render(entityIn, entityYaw, partialTicks, matrixStackIn, bufferIn, packedLightIn)
             }
+            ForgeHooksClient.setRenderLayer(null)
+            matrixStackIn.pop()
+            super.render(entityIn, entityYaw, partialTicks, matrixStackIn, bufferIn, packedLightIn)
         }
     }
 

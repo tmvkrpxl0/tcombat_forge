@@ -6,7 +6,7 @@ import com.tmvkrpxl0.tcombat.common.entities.misc.CustomizableBlockEntity
 import com.tmvkrpxl0.tcombat.common.entities.misc.CustomizableFluidEntity
 import com.tmvkrpxl0.tcombat.common.entities.misc.ICustomizableEntity
 import com.tmvkrpxl0.tcombat.common.util.TCombatUtil
-import net.minecraft.client.world.DimensionRenderInfo
+import net.minecraft.block.BlockState
 import net.minecraft.enchantment.EnchantmentHelper
 import net.minecraft.enchantment.Enchantments
 import net.minecraft.enchantment.FrostWalkerEnchantment
@@ -60,6 +60,7 @@ object WorldEventListener {
 
     @SubscribeEvent
     fun onInteract(event: LeftClickBlock) {
+        if(event.side == LogicalSide.CLIENT)return
         val stack = event.itemStack
         if (stack.item is BucketItem) {
             if (event.face != null) {
@@ -71,8 +72,8 @@ object WorldEventListener {
                 if (fluid is FlowingFluid) {
                     fluid = fluid.flowingFluid
                     if (event.entityLiving.isSneaking) {
-                        val fluidEntity = CustomizableFluidEntity(world,
-                            blockPos.x.toDouble(), blockPos.y.toDouble(), blockPos.z.toDouble(),
+                        val fluidEntity = CustomizableFluidEntity(TCombatEntityTypes.CUSTOMIZABLE_FLUID_ENTITY.get(), world)
+                        fluidEntity.initialize(blockPos.x.toDouble(), blockPos.y.toDouble(), blockPos.z.toDouble(),
                             event.player, fluid.defaultState)
                         world.addEntity(fluidEntity)
                     } else {
@@ -81,13 +82,8 @@ object WorldEventListener {
                         }
                     }
                 }
+                event.isCanceled = true
             }
-        }
-        if(event.player.isSneaking){
-            val blockState = event.world.getBlockState(event.pos)
-            val cb = CustomizableBlockEntity(TCombatEntityTypes.CUSTOMIZABLE_BLOCK_ENTITY.get(), event.world)
-            cb.initialize(event.player.posX, event.player.posY, event.player.posZ, blockState, event.player, false)
-            event.world.addEntity(cb)
         }
     }
 
