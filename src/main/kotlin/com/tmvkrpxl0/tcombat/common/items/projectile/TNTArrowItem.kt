@@ -22,7 +22,11 @@ class TNTArrowItem(properties: Properties) : ArrowItem(properties) {
 
     init {
         DispenserBlock.registerDispenseBehavior(this, object : ProjectileDispenseBehavior() {
-            override fun getProjectileEntity(worldIn: World, position: IPosition, stackIn: ItemStack): ProjectileEntity = TNTArrowEntity(worldIn, position.x, position.y, position.z)
+            override fun getProjectileEntity(
+                worldIn: World,
+                position: IPosition,
+                stackIn: ItemStack
+            ): ProjectileEntity = TNTArrowEntity(worldIn, position.x, position.y, position.z)
         })
     }
 }

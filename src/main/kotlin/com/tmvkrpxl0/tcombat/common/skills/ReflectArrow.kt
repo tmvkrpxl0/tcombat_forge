@@ -25,7 +25,9 @@ object ReflectArrow : AbstractActiveSkill() {
             val list = player.world.getEntitiesInAABBexcluding(
                 player, axisAlignedBB
             ) { o: Entity ->
-                o is ProjectileEntity && o.shooter != player && o.getDistanceSq(player) < 15 * 15 && player.canEntityBeSeen(o) && TCombatUtil.getEntityToEntityAngle(
+                o is ProjectileEntity && o.shooter != player && o.getDistanceSq(player) < 15 * 15 && player.canEntityBeSeen(
+                    o
+                ) && TCombatUtil.getEntityToEntityAngle(
                     o,
                     player
                 ) < 30 && (o !is ArrowEntity ||

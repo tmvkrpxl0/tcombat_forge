@@ -4,15 +4,19 @@ import com.tmvkrpxl0.tcombat.TCombatMain
 import com.tmvkrpxl0.tcombat.common.skills.AbstractActiveSkill
 import com.tmvkrpxl0.tcombat.common.skills.AbstractSkill
 import com.tmvkrpxl0.tcombat.common.util.TCombatUtil
+import net.minecraft.block.Block
+import net.minecraft.command.arguments.BlockStateParser
 import net.minecraft.entity.LivingEntity
 import net.minecraft.entity.player.PlayerEntity
 import net.minecraft.network.PacketBuffer
 import net.minecraft.util.ResourceLocation
 import net.minecraft.util.Util
 import net.minecraft.util.text.StringTextComponent
+import net.minecraftforge.fml.common.thread.SidedThreadGroups
 import net.minecraftforge.fml.network.NetworkEvent
 import net.minecraftforge.fml.network.NetworkRegistry
 import net.minecraftforge.fml.network.simple.SimpleChannel
+import java.lang.IllegalStateException
 import java.util.*
 import java.util.function.Supplier
 
@@ -25,7 +29,7 @@ object TCombatPacketHandler {
         PROTOCOL_VERSION == o
     }
 
-    fun registerPackets(){
+    fun registerPackets() {
         var id = 0
         INSTANCE.registerMessage(id, SkillRequestPacket::class.java,
             { skillRequestPacket: SkillRequestPacket, packetBuffer: PacketBuffer ->
@@ -73,6 +77,22 @@ object TCombatPacketHandler {
             contextSupplier.get().packetHandled = true
         }
         id++
+        INSTANCE.registerMessage(id,
+            CBSizeRequestPacket::class.java,
+            {sizeRequestPacket: CBSizeRequestPacket, packetBuffer: PacketBuffer->
+                packetBuffer.writeVarInt(Block.getStateId(sizeRequestPacket.blockState))
+                packetBuffer.writeVarInt(sizeRequestPacket.uniqueId)
+            },
+            { packetBuffer: PacketBuffer ->
+                val blockState = Block.getStateById(packetBuffer.readVarInt())
+                val uniqueId = packetBuffer.readVarInt()
+                CBSizeRequestPacket(blockState, uniqueId)
+            }){ sizeRequestPacket: CBSizeRequestPacket, contextSupplier: Supplier<NetworkEvent.Context> ->
+            if(Thread.currentThread().threadGroup == SidedThreadGroups.CLIENT)throw IllegalStateException("CBSizeRequestPacket should only be sent from client to server!!!")
+            contextSupplier.get().enqueueWork {
+
+            }
+        }
     }
 
 }

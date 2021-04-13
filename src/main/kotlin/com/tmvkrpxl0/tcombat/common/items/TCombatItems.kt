@@ -1,8 +1,8 @@
 package com.tmvkrpxl0.tcombat.common.items
 
 import com.tmvkrpxl0.tcombat.TCombatMain
-import com.tmvkrpxl0.tcombat.common.items.projectile.SnipeArrowItem
 import com.tmvkrpxl0.tcombat.common.items.misc.MobileDispenser
+import com.tmvkrpxl0.tcombat.common.items.projectile.SnipeArrowItem
 import com.tmvkrpxl0.tcombat.common.items.projectile.TNTArrowItem
 import net.minecraft.item.AxeItem
 import net.minecraft.item.Item

@@ -2,6 +2,7 @@ package com.tmvkrpxl0.tcombat.common.entities
 
 import com.tmvkrpxl0.tcombat.TCombatMain
 import com.tmvkrpxl0.tcombat.common.entities.misc.CustomizableBlockEntity
+import com.tmvkrpxl0.tcombat.common.entities.misc.CustomizableFluidEntity
 import com.tmvkrpxl0.tcombat.common.entities.projectile.SnipeArrowEntity
 import com.tmvkrpxl0.tcombat.common.entities.projectile.TNTArrowEntity
 import net.minecraft.entity.EntityClassification
@@ -22,7 +23,16 @@ class TCombatEntityTypes(eventBus: IEventBus) {
             EntityType.Builder.create(
                 { type: EntityType<CustomizableBlockEntity>, world: World -> CustomizableBlockEntity(type, world) },
                 EntityClassification.MISC
-            ).size(1f, 1f).disableSummoning().build("customizable_block_entity")
+            ).size(1f, 1f).build("customizable_block_entity")
+        }
+        val CUSTOMIZABLE_FLUID_ENTITY: RegistryObject<EntityType<CustomizableFluidEntity>> = ENTITIES.register(
+            "customizable_fluid_entity"
+        ){
+            EntityType.Builder.create(
+                {
+                    type: EntityType<CustomizableFluidEntity>, world: World -> CustomizableFluidEntity(type, world)
+                }, EntityClassification.MISC
+            ).size(1f, 1f).build("customizable_fluid_entity")
         }
         val TNT_ARROW: RegistryObject<EntityType<TNTArrowEntity>> = ENTITIES.register(
             "tnt_arrow"
@@ -34,8 +44,13 @@ class TCombatEntityTypes(eventBus: IEventBus) {
                 )
             }, EntityClassification.MISC).size(0.5f, 0.5f).build("tnt_arrow")
         }
-        val SNIPE_ARROW: RegistryObject<EntityType<SnipeArrowEntity>> = ENTITIES.register("snipe_arrow"){
-            EntityType.Builder.create({snipeArrowType: EntityType<SnipeArrowEntity>, world: World -> SnipeArrowEntity(snipeArrowType, world)}, EntityClassification.MISC).size(0.5f, 0.5f).build("snipe_arrow")
+        val SNIPE_ARROW: RegistryObject<EntityType<SnipeArrowEntity>> = ENTITIES.register("snipe_arrow") {
+            EntityType.Builder.create({ snipeArrowType: EntityType<SnipeArrowEntity>, world: World ->
+                SnipeArrowEntity(
+                    snipeArrowType,
+                    world
+                )
+            }, EntityClassification.MISC).size(0.5f, 0.5f).build("snipe_arrow")
         }
     }
 

@@ -17,7 +17,7 @@ import org.lwjgl.glfw.GLFW
 import java.util.*
 
 class KeyHandler : AbstractKeyHandler(BINDINGS) {
-    companion object{
+    companion object {
         private const val CATEGORY = "com.tmvkrpxl0 combat"
         val KB_REFLECT_ARROW = KeyBinding(
             "Reflect Arrow",

@@ -1,26 +1,43 @@
 package com.tmvkrpxl0.tcombat.common.util
 
 import com.google.common.primitives.Doubles
+import net.minecraft.block.Blocks
+import net.minecraft.block.FlowingFluidBlock
 import net.minecraft.block.ILiquidContainer
+import net.minecraft.block.material.Material
+import net.minecraft.enchantment.Enchantments
 import net.minecraft.entity.Entity
 import net.minecraft.entity.LivingEntity
 import net.minecraft.entity.player.PlayerEntity
 import net.minecraft.fluid.FlowingFluid
 import net.minecraft.fluid.Fluid
+import net.minecraft.fluid.FluidState
+import net.minecraft.fluid.Fluids
 import net.minecraft.item.BucketItem
+import net.minecraft.nbt.CompoundNBT
+import net.minecraft.nbt.NBTUtil
 import net.minecraft.particles.ParticleTypes
+import net.minecraft.state.Property
 import net.minecraft.tags.FluidTags
+import net.minecraft.util.Direction
+import net.minecraft.util.ResourceLocation
 import net.minecraft.util.SoundCategory
 import net.minecraft.util.SoundEvents
 import net.minecraft.util.math.BlockPos
 import net.minecraft.util.math.BlockRayTraceResult
+import net.minecraft.util.math.MathHelper
+import net.minecraft.util.math.shapes.ISelectionContext
 import net.minecraft.util.math.vector.Vector3d
+import net.minecraft.util.registry.Registry
 import net.minecraft.world.IWorld
 import net.minecraft.world.World
+import net.minecraftforge.common.util.BlockSnapshot
+import net.minecraftforge.event.ForgeEventFactory
 import net.minecraftforge.fml.server.ServerLifecycleHooks
 import java.util.*
 import java.util.stream.Collectors
 import javax.annotation.Nonnull
+import kotlin.math.acos
 
 object TCombatUtil {
     private val targets = HashMap<PlayerEntity, List<LivingEntity>>()
@@ -120,7 +137,7 @@ object TCombatUtil {
         }
     }
 
-    internal fun playEmptySound(@Nonnull item: BucketItem, player: PlayerEntity, worldIn: IWorld, pos: BlockPos) {
+    fun playEmptySound(@Nonnull item: BucketItem, player: PlayerEntity, worldIn: IWorld, pos: BlockPos) {
         val content = item.fluid
         var soundevent = content.attributes.emptySound
         if (soundevent == null) soundevent =
@@ -134,7 +151,7 @@ object TCombatUtil {
 
     fun angle(@Nonnull a: Vector3d, b: Vector3d): Float {
         val dot = Doubles.constrainToRange(a.dotProduct(b) / (a.length() * b.length()), -1.0, 1.0)
-        return Math.acos(dot).toFloat()
+        return acos(dot).toFloat()
     }
 
     @Nonnull
@@ -162,5 +179,85 @@ object TCombatUtil {
             idx++
         }
         return null
+    }
+
+    fun freezeGround(living: Entity, worldIn: World, pos: BlockPos, level: Int) {
+        val blockstate = Blocks.FROSTED_ICE.defaultState
+        val f = 16.coerceAtMost(2 + level).toFloat()
+        val mutablePos = BlockPos.Mutable()
+        for (blockPos in BlockPos.getAllInBoxMutable(
+            pos.add(-f.toDouble(), -1.0, -f.toDouble()),
+            pos.add(f.toDouble(), -1.0, f.toDouble())
+        )) {
+            if (blockPos.withinDistance(living.positionVec, f.toDouble())) {
+                Enchantments.FROST_WALKER
+                mutablePos.setPos(blockPos.x, blockPos.y + 1, blockPos.z)
+                val blockstate1 = worldIn.getBlockState(mutablePos)
+                if (blockstate1.isAir(worldIn, mutablePos)) {
+                    val blockstate2 = worldIn.getBlockState(blockPos)
+                    val isFull = blockstate2.block === Blocks.WATER && blockstate2.get(FlowingFluidBlock.LEVEL) == 0
+                    if (blockstate2.material == Material.WATER && isFull && blockstate.isValidPosition(
+                            worldIn,
+                            blockPos
+                        ) && worldIn.placedBlockCollides(
+                            blockstate,
+                            blockPos,
+                            ISelectionContext.dummy()
+                        ) && !ForgeEventFactory.onBlockPlace(
+                            living,
+                            BlockSnapshot.create(worldIn.dimensionKey, worldIn, blockPos),
+                            Direction.UP
+                        )
+                    ) {
+                        worldIn.setBlockState(blockPos, blockstate)
+                        worldIn.pendingBlockTicks.scheduleTick(
+                            blockPos,
+                            Blocks.FROSTED_ICE,
+                            MathHelper.nextInt(worldIn.rand, 60, 120)
+                        )
+                    }
+                }
+            }
+        }
+    }
+
+    //Modified copy of readFluidState from NBTUtil
+    fun readFluidState(tag: CompoundNBT): FluidState {
+        return if (!tag.contains("Name", 8)) {
+            Fluids.EMPTY.defaultState
+        } else {
+            val fluid = Registry.FLUID.getOrDefault(ResourceLocation(tag.getString("Name")))
+            var fluidState = fluid.defaultState
+            if (tag.contains("Properties", 10)) {
+                val compoundnbt = tag.getCompound("Properties")
+                val statecontainer = fluid.stateContainer
+                for (s in compoundnbt.keySet()) {
+                    val property = statecontainer.getProperty(s)
+                    if (property != null) {
+                        fluidState = NBTUtil.setValueHelper(fluidState, property, s, compoundnbt, tag)
+                    }
+                }
+            }
+            fluidState
+        }
+    }
+
+    //Modified copy of writeFluidState from NBTUtil
+    fun writeFluidState(tag: FluidState): CompoundNBT {
+        val compoundnbt = CompoundNBT()
+        compoundnbt.putString("Name", Registry.FLUID.getKey(tag.fluid).toString())
+        val immutablemap = tag.values
+        if (!immutablemap.isEmpty()) {
+            val compoundnbt1 = CompoundNBT()
+            for ((property, value) in immutablemap) {
+                compoundnbt1.putString(property.name, getName(property, value))
+            }
+            compoundnbt.put("Properties", compoundnbt1)
+        }
+        return compoundnbt
+    }
+
+    fun <T : Comparable<T>?> getName(p_190010_0_: Property<T>, p_190010_1_: Comparable<*>): String {
+        return p_190010_0_.getName(p_190010_1_ as T)
     }
 }

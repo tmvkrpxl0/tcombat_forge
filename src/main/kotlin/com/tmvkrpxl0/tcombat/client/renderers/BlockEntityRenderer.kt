@@ -1,6 +1,7 @@
 package com.tmvkrpxl0.tcombat.client.renderers
 
 import com.mojang.blaze3d.matrix.MatrixStack
+import com.tmvkrpxl0.tcombat.TCombatMain
 import com.tmvkrpxl0.tcombat.common.entities.misc.CustomizableBlockEntity
 import net.minecraft.block.BlockRenderType
 import net.minecraft.client.Minecraft
@@ -9,11 +10,15 @@ import net.minecraft.client.renderer.RenderType
 import net.minecraft.client.renderer.RenderTypeLookup
 import net.minecraft.client.renderer.entity.EntityRenderer
 import net.minecraft.client.renderer.entity.EntityRendererManager
+import net.minecraft.client.renderer.model.BakedQuad
 import net.minecraft.client.renderer.texture.AtlasTexture
 import net.minecraft.client.renderer.texture.OverlayTexture
+import net.minecraft.client.renderer.vertex.DefaultVertexFormats
+import net.minecraft.entity.Entity
 import net.minecraft.util.ResourceLocation
 import net.minecraft.util.math.BlockPos
 import net.minecraftforge.client.ForgeHooksClient
+import net.minecraftforge.client.model.pipeline.LightUtil
 import java.util.*
 import javax.annotation.Nonnull
 
@@ -22,6 +27,7 @@ class BlockEntityRenderer(renderManager: EntityRendererManager) :
     init {
         shadowSize = 0.5f
     }
+
     override fun render(
         entityIn: CustomizableBlockEntity,
         entityYaw: Float,
@@ -30,23 +36,28 @@ class BlockEntityRenderer(renderManager: EntityRendererManager) :
         @Nonnull bufferIn: IRenderTypeBuffer,
         packedLightIn: Int
     ) {
-        val blockstate = entityIn.blockState
-        if (blockstate.renderType == BlockRenderType.MODEL) {
+        val blockState = entityIn.blockState
+        if (blockState.renderType == BlockRenderType.MODEL) {
             val world = entityIn.entityWorld
-            if (blockstate !== world.getBlockState(entityIn.position) && blockstate.renderType != BlockRenderType.INVISIBLE) {
+            if (blockState !== world.getBlockState(entityIn.position) && blockState.renderType != BlockRenderType.INVISIBLE) {
                 matrixStackIn.push()
-                val blockpos = BlockPos(entityIn.posX, entityIn.boundingBox.maxY, entityIn.posZ)
+                val blockPos = BlockPos(entityIn.posX, entityIn.boundingBox.maxY, entityIn.posZ)
                 matrixStackIn.translate(-0.5, 0.0, -0.5)
+                val b:Entity
+
                 val blockRendererDispatcher = Minecraft.getInstance().blockRendererDispatcher
-                blockRendererDispatcher.getModelForState(blockstate)
+                TCombatMain.LOGGER.info("Start of printing:")
+                blockRendererDispatcher.getModelForState(blockState).getQuads(blockState, null, Random()).forEach { bakedQuad: BakedQuad ->
+                    TCombatMain.LOGGER.info("Packed: " + bakedQuad.vertexData)
+                }
                 for (type in RenderType.getBlockRenderTypes()) {
-                    if (RenderTypeLookup.canRenderInLayer(blockstate, type)) {
+                    if (RenderTypeLookup.canRenderInLayer(blockState, type)) {
                         ForgeHooksClient.setRenderLayer(type)
                         blockRendererDispatcher.blockModelRenderer.renderModel(
                             world,
-                            blockRendererDispatcher.getModelForState(blockstate),
-                            blockstate,
-                            blockpos,
+                            blockRendererDispatcher.getModelForState(blockState),
+                            blockState,
+                            blockPos,
                             matrixStackIn,
                             bufferIn.getBuffer(type),
                             false,

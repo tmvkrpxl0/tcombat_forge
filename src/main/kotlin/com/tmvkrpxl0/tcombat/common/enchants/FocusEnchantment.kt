@@ -3,7 +3,6 @@ package com.tmvkrpxl0.tcombat.common.enchants
 import net.minecraft.enchantment.Enchantment
 import net.minecraft.enchantment.EnchantmentType
 import net.minecraft.inventory.EquipmentSlotType
-import javax.annotation.Nonnull
 
 class FocusEnchantment(rarityIn: Rarity, vararg slots: EquipmentSlotType) :
     Enchantment(rarityIn, EnchantmentType.CROSSBOW, slots) {

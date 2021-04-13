@@ -2,7 +2,7 @@ package com.tmvkrpxl0.tcombat.common.entities.projectile
 
 import com.tmvkrpxl0.tcombat.common.entities.TCombatEntityTypes
 import com.tmvkrpxl0.tcombat.common.items.TCombatItems
-import com.tmvkrpxl0.tcombat.common.listeners.CommonEventListener
+import com.tmvkrpxl0.tcombat.common.listeners.EntityEventListener
 import net.minecraft.entity.EntityType
 import net.minecraft.entity.LivingEntity
 import net.minecraft.entity.projectile.AbstractArrowEntity
@@ -19,11 +19,21 @@ import javax.annotation.Nonnull
 class TNTArrowEntity : AbstractArrowEntity {
     private var explode = true
 
-    constructor(worldIn: World, x: Double, y: Double, z: Double) : super(TCombatEntityTypes.TNT_ARROW.get(), x, y, z, worldIn)
+    constructor(worldIn: World, x: Double, y: Double, z: Double) : super(
+        TCombatEntityTypes.TNT_ARROW.get(),
+        x,
+        y,
+        z,
+        worldIn
+    )
 
     constructor(tntArrowType: EntityType<TNTArrowEntity>, world: World) : super(tntArrowType, world)
 
-    constructor(entityType: EntityType<TNTArrowEntity>, worldIn: World, shooter: LivingEntity) : super(entityType, shooter, worldIn)
+    constructor(entityType: EntityType<TNTArrowEntity>, worldIn: World, shooter: LivingEntity) : super(
+        entityType,
+        shooter,
+        worldIn
+    )
 
 
     override fun tick() {
@@ -32,7 +42,15 @@ class TNTArrowEntity : AbstractArrowEntity {
         if (explode) {
             if (isInLava) {
                 val flag = ForgeEventFactory.getMobGriefingEvent(world, this.shooter)
-                world.createExplosion(this, this.posX, this.posY, this.posZ, (if (isCritical) 4 else 2).toFloat(), flag && isBurning, if(flag) Explosion.Mode.BREAK else Explosion.Mode.NONE)
+                world.createExplosion(
+                    this,
+                    this.posX,
+                    this.posY,
+                    this.posZ,
+                    (if (isCritical) 4 else 2).toFloat(),
+                    flag && isBurning,
+                    if (flag) Explosion.Mode.BREAK else Explosion.Mode.NONE
+                )
                 this.remove()
                 return
             }
@@ -42,10 +60,18 @@ class TNTArrowEntity : AbstractArrowEntity {
 
     override fun onImpact(result: RayTraceResult) {
         super.onImpact(result)
-        if(this.shooter is LivingEntity)CommonEventListener.explosionImmune.add(this.shooter as LivingEntity)
-        if(!world.isRemote() && explode && !isInWater){
+        if (this.shooter is LivingEntity) EntityEventListener.explosionImmune.add(this.shooter as LivingEntity)
+        if (!world.isRemote() && explode && !isInWater) {
             val flag = ForgeEventFactory.getMobGriefingEvent(world, this.shooter)
-            world.createExplosion(this, this.posX, this.posY, this.posZ, (if (isCritical) 4 else 2).toFloat(), flag && isBurning, if(flag) Explosion.Mode.BREAK else Explosion.Mode.NONE)
+            world.createExplosion(
+                this,
+                this.posX,
+                this.posY,
+                this.posZ,
+                (if (isCritical) 4 else 2).toFloat(),
+                flag && isBurning,
+                if (flag) Explosion.Mode.BREAK else Explosion.Mode.NONE
+            )
             this.remove()
         }
     }

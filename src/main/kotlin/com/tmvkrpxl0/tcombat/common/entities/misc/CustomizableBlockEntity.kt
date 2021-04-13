@@ -5,71 +5,74 @@ import net.minecraft.block.BlockState
 import net.minecraft.block.Blocks
 import net.minecraft.entity.Entity
 import net.minecraft.entity.EntityType
-import net.minecraft.entity.passive.IronGolemEntity
+import net.minecraft.entity.passive.TameableEntity
 import net.minecraft.entity.player.PlayerEntity
 import net.minecraft.nbt.CompoundNBT
 import net.minecraft.nbt.NBTUtil
 import net.minecraft.network.IPacket
-import net.minecraft.network.datasync.DataParameter
-import net.minecraft.network.datasync.DataSerializers
-import net.minecraft.network.datasync.EntityDataManager
 import net.minecraft.world.World
 import net.minecraftforge.fml.network.NetworkHooks
 import javax.annotation.Nonnull
 
-class CustomizableBlockEntity : Entity {
+class CustomizableBlockEntity : Entity, ICustomizableEntity {
     private var isSolid = false
-    private var player: PlayerEntity? = null
-    var blockState: BlockState = Blocks.SAND.defaultState
-        private set
+    lateinit var player: PlayerEntity //This should never be null
+    lateinit var blockState: BlockState private set
 
-    constructor(
-        worldIn: World,
-        x: Double,
-        y: Double,
-        z: Double,
-        blockState: BlockState,
-        player: PlayerEntity?,
-        isSolid: Boolean
-    ) : super(TCombatEntityTypes.CUSTOMIZABLE_BLOCK_ENTITY.get(), worldIn) {
-        setPosition(x, y + ((1.0f - this.height) / 2.0f).toDouble(), z)
-        this.player = player
-        this.blockState = blockState
-        this.isSolid = isSolid
-        dataManager.set(OWNER_ID, this.player!!.entityId)
+    constructor(type: EntityType<out CustomizableBlockEntity>, world: World) : super(type, world){
+
     }
-
-    constructor(type: EntityType<out CustomizableBlockEntity>, world: World) : super(type, world)
-
-    override fun tick() {
-        super.tick()
-        if (!world.isRemote) {
-            if (player == null || !player!!.isAlive || !world.players.contains(player)) this.remove()
-        }
-        blockState = Blocks.DARK_OAK_SAPLING.defaultState
+    fun initialize(x: Double,
+                   y: Double,
+                   z: Double,
+                   blockState: BlockState,
+                   player: PlayerEntity,
+                   isSolid: Boolean){
+        this.setPosition(x,y,z)
+        this.blockState = blockState
+        this.player = player
+        this.isSolid = isSolid
+        serializeNBT()
     }
 
     override fun registerData() {
-        dataManager.register(OWNER_ID, 0)
+
     }
 
-    override fun readAdditional(compound: CompoundNBT) {
-        blockState = NBTUtil.readBlockState(compound.getCompound("BlockState"))
-        if (blockState.block.isAir(blockState, this.entityWorld, entityBlockPosition)) {
-            blockState = Blocks.SAND.defaultState
+    override fun getOwner() : PlayerEntity{
+        return this.player
+    }
+
+    override fun tick() {
+        if (!this.world.isRemote) {
+            if (!this.player.isAlive) this.remove()
         }
-        isSolid = compound.getBoolean("Solid")
-        player = world.getPlayerByUuid(compound.getUniqueId("Owner"))
+        super.tick()
+    }
+
+    //Order:
+    //PlayerEntity
+    //BlockState
+    //isSolid
+    override fun readAdditional(compound: CompoundNBT) {
+        this.player = this.world.getPlayerByUuid(compound.getUniqueId("Owner"))!!
+        this.blockState = NBTUtil.readBlockState(compound.getCompound("BlockState"))
+        if (blockState.block.isAir(this.blockState, this.entityWorld, this.entityBlockPosition)) {
+            this.blockState = Blocks.SAND.defaultState
+        }
+        this.isSolid = compound.getBoolean("Solid")
     }
 
     override fun writeAdditional(compound: CompoundNBT) {
-        compound.putBoolean("Solid", isSolid)
-        compound.put("BlockState", NBTUtil.writeBlockState(blockState))
-        compound.putUniqueId("Owner", player!!.uniqueID)
+        this.world.isRemote
+        compound.putUniqueId("Owner", this.player.uniqueID)
+        compound.put("BlockState", NBTUtil.writeBlockState(this.blockState))
+        compound.putBoolean("Solid", this.isSolid)
+
     }
 
     override fun func_241845_aY(): Boolean {
-        return isSolid
+        return this.isSolid
     }
 
     @Nonnull
@@ -77,8 +80,11 @@ class CustomizableBlockEntity : Entity {
         return NetworkHooks.getEntitySpawningPacket(this)
     }
 
-    companion object {
-        private val OWNER_ID: DataParameter<Int> =
-            EntityDataManager.createKey(IronGolemEntity::class.java, DataSerializers.VARINT)
+    override fun toWorld(){
+        val b = this.world.getBlockState(this.position)
+        if(!b.isOpaqueCube(this.world, this.position)){
+            this.world.setBlockState(this.position, this.blockState)
+        }
+        this.remove()
     }
 }

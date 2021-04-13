@@ -22,6 +22,10 @@ object ClientModEventListener {
         RenderingRegistry.registerEntityRenderingHandler(TCombatEntityTypes.TNT_ARROW.get()) { renderManagerIn: EntityRendererManager ->
             TNTArrowRenderer(renderManagerIn)
         }
-        RenderingRegistry.registerEntityRenderingHandler(TCombatEntityTypes.SNIPE_ARROW.get()) { renderManager: EntityRendererManager -> TippedArrowRenderer(renderManager) }
+        RenderingRegistry.registerEntityRenderingHandler(TCombatEntityTypes.SNIPE_ARROW.get()) { renderManager: EntityRendererManager ->
+            TippedArrowRenderer(
+                renderManager
+            )
+        }
     }
 }
