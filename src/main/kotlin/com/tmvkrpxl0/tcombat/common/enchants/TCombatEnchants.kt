@@ -13,6 +13,5 @@ object TCombatEnchants {
         )
     }
 
-    val CROSSBOW_FLAME =
-        ENCHANTMENTS.register<Enchantment>("crossbow_flame") { CrossbowFlameEnchantment(Enchantment.Rarity.RARE) }
+    val CROSSBOW_FLAME = ENCHANTMENTS.register<Enchantment>("crossbow_flame") { CrossbowFlameEnchantment(Enchantment.Rarity.RARE) }
 }

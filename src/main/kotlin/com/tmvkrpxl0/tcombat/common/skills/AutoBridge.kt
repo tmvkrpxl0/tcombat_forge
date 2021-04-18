@@ -33,9 +33,7 @@ object AutoBridge : AbstractPassiveSkill() {
                 }
                 val belowState = world.getBlockState(below)
                 val state = world.getBlockState(pos)
-                if ((belowState.isAir || belowState.isReplaceable(Fluids.FLOWING_WATER)) &&
-                    (state.isAir || state.isReplaceable(Fluids.FLOWING_WATER))
-                ) {
+                if ((belowState.isAir || belowState.isReplaceable(Fluids.FLOWING_WATER)) && (state.isAir || state.isReplaceable(Fluids.FLOWING_WATER))) {
                     world.setBlockState(below, Fluids.FLOWING_LAVA.defaultState.blockState, 11)
                     world.setBlockState(pos, Fluids.FLOWING_WATER.defaultState.blockState, 11)
                     world.setBlockState(pos, Blocks.AIR.defaultState, 1)

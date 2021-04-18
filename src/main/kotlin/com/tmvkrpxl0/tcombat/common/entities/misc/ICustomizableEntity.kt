@@ -1,12 +1,11 @@
 package com.tmvkrpxl0.tcombat.common.entities.misc
 
 import net.minecraft.entity.player.PlayerEntity
+import net.minecraftforge.fml.common.registry.IEntityAdditionalSpawnData
 import java.util.*
 
-interface ICustomizableEntity {
+interface ICustomizableEntity: IEntityAdditionalSpawnData {
     fun getOwner(): PlayerEntity?
     fun getOwnerId(): UUID
-    fun setOwnerId(uuid:UUID)
-    fun setOwner(player:PlayerEntity)
     fun toWorld()
 }

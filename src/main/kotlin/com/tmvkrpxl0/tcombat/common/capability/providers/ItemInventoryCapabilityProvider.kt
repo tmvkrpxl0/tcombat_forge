@@ -1,4 +1,4 @@
-package com.tmvkrpxl0.tcombat.common.capability
+package com.tmvkrpxl0.tcombat.common.capability.providers
 
 import net.minecraft.nbt.INBT
 import net.minecraft.util.Direction

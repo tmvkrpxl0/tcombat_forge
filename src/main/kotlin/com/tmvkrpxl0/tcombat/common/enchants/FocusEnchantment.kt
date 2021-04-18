@@ -4,8 +4,7 @@ import net.minecraft.enchantment.Enchantment
 import net.minecraft.enchantment.EnchantmentType
 import net.minecraft.inventory.EquipmentSlotType
 
-class FocusEnchantment(rarityIn: Rarity, vararg slots: EquipmentSlotType) :
-    Enchantment(rarityIn, EnchantmentType.CROSSBOW, slots) {
+class FocusEnchantment(rarityIn: Rarity, vararg slots: EquipmentSlotType) : Enchantment(rarityIn, EnchantmentType.CROSSBOW, slots) {
     override fun getMinEnchantability(enchantmentLevel: Int): Int {
         return 1 + 10 * (enchantmentLevel - 1)
     }

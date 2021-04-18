@@ -31,13 +31,11 @@ abstract class AbstractKeyHandler(bindings: Builder) {
             if (keyBinding.isKeyDown) {
                 return true
             }
-            return if (keyBinding.keyConflictContext.isActive && keyBinding.keyModifier.isActive(keyBinding.keyConflictContext)) {
-                //Manually check in case keyBinding#pressed just never got a chance to be updated
+            return if (keyBinding.keyConflictContext.isActive && keyBinding.keyModifier.isActive(keyBinding.keyConflictContext)) { //Manually check in case keyBinding#pressed just never got a chance to be updated
                 isKeyDown(keyBinding)
             } else KeyModifier.isKeyCodeModifier(keyBinding.key) && isKeyDown(
                 keyBinding
-            )
-            //If we failed, due to us being a key modifier as our key, check the old way
+            ) //If we failed, due to us being a key modifier as our key, check the old way
         }
 
         private fun isKeyDown(keyBinding: KeyBinding): Boolean {

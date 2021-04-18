@@ -22,42 +22,14 @@ class TNTArrowRenderer(renderManagerIn: EntityRendererManager) : ArrowRenderer<T
         return TippedArrowRenderer.RES_ARROW
     }
 
-    override fun render(
-        @Nonnull entityIn: TNTArrowEntity,
-        entityYaw: Float,
-        partialTicks: Float,
-        @Nonnull matrixStackIn: MatrixStack,
-        @Nonnull bufferIn: IRenderTypeBuffer,
-        packedLightIn: Int
-    ) {
+    override fun render(@Nonnull entityIn: TNTArrowEntity, entityYaw: Float, partialTicks: Float, @Nonnull matrixStackIn: MatrixStack, @Nonnull bufferIn: IRenderTypeBuffer, packedLightIn: Int) {
         matrixStackIn.push()
-        matrixStackIn.rotate(
-            Vector3f.YP.rotationDegrees(
-                MathHelper.lerp(
-                    partialTicks,
-                    entityIn.prevRotationYaw,
-                    entityIn.rotationYaw
-                ) - 90f
-            )
-        )
-        matrixStackIn.rotate(
-            Vector3f.ZP.rotationDegrees(
-                MathHelper.lerp(
-                    partialTicks,
-                    entityIn.prevRotationPitch,
-                    entityIn.rotationPitch
-                )
-            )
-        )
+        //Rotate box that this will render
+        matrixStackIn.rotate(Vector3f.YP.rotationDegrees(MathHelper.lerp(partialTicks, entityIn.prevRotationYaw, entityIn.rotationYaw) - 90f))
+        matrixStackIn.rotate(Vector3f.ZP.rotationDegrees(MathHelper.lerp(partialTicks, entityIn.prevRotationPitch, entityIn.rotationPitch)))
+        //render the box
         model.render(
-            matrixStackIn,
-            bufferIn.getBuffer(model.getRenderType(BOX)),
-            packedLightIn,
-            OverlayTexture.getPackedUV(0f, false),
-            1f,
-            1f,
-            1f,
-            1f
+            matrixStackIn, bufferIn.getBuffer(model.getRenderType(BOX)), packedLightIn, OverlayTexture.getPackedUV(0f, false), 1f, 1f, 1f, 1f
         )
         matrixStackIn.pop()
         super.render(entityIn, entityYaw, partialTicks, matrixStackIn, bufferIn, packedLightIn)

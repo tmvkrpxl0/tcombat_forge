@@ -1,4 +1,4 @@
-package com.tmvkrpxl0.tcombat.common.listeners
+package com.tmvkrpxl0.tcombat.common.events
 
 import com.tmvkrpxl0.tcombat.TCombatMain
 import net.minecraft.item.Items
@@ -9,9 +9,7 @@ import net.minecraftforge.eventbus.api.SubscribeEvent
 import net.minecraftforge.fml.common.Mod
 
 @Mod.EventBusSubscriber(
-    modid = TCombatMain.MODID,
-    bus = Mod.EventBusSubscriber.Bus.FORGE,
-    value = [Dist.CLIENT, Dist.DEDICATED_SERVER]
+    modid = TCombatMain.MODID, bus = Mod.EventBusSubscriber.Bus.FORGE, value = [Dist.CLIENT, Dist.DEDICATED_SERVER]
 )
 object ItemEventListener {
     @SubscribeEvent

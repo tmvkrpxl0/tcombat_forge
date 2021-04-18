@@ -14,19 +14,11 @@ import net.minecraft.world.World
 
 class TNTArrowItem(properties: Properties) : ArrowItem(properties) {
 
-    override fun createArrow(
-        worldIn: World,
-        stack: ItemStack,
-        shooter: LivingEntity
-    ): AbstractArrowEntity = TNTArrowEntity(TCombatEntityTypes.TNT_ARROW.get(), worldIn, shooter)
+    override fun createArrow(worldIn: World, stack: ItemStack, shooter: LivingEntity): AbstractArrowEntity = TNTArrowEntity(TCombatEntityTypes.TNT_ARROW.get(), worldIn, shooter)
 
     init {
         DispenserBlock.registerDispenseBehavior(this, object : ProjectileDispenseBehavior() {
-            override fun getProjectileEntity(
-                worldIn: World,
-                position: IPosition,
-                stackIn: ItemStack
-            ): ProjectileEntity = TNTArrowEntity(worldIn, position.x, position.y, position.z)
+            override fun getProjectileEntity(worldIn: World, position: IPosition, stackIn: ItemStack): ProjectileEntity = TNTArrowEntity(worldIn, position.x, position.y, position.z)
         })
     }
 }

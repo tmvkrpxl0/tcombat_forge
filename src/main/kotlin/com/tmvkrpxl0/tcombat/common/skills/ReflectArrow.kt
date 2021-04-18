@@ -28,10 +28,8 @@ object ReflectArrow : AbstractActiveSkill() {
                 o is ProjectileEntity && o.shooter != player && o.getDistanceSq(player) < 15 * 15 && player.canEntityBeSeen(
                     o
                 ) && TCombatUtil.getEntityToEntityAngle(
-                    o,
-                    player
-                ) < 30 && (o !is ArrowEntity ||
-                        (o as AbstractArrowEntity).inGround)
+                    o, player
+                ) < 30 && (o !is ArrowEntity || !(o as AbstractArrowEntity).inGround)
             }
             if (list.isEmpty()) return false
             val lookVec = player.getLook(1f)
@@ -50,13 +48,7 @@ object ReflectArrow : AbstractActiveSkill() {
                 projectile.setMotion(cos * x - sin * z, projectile.motion.y, sin * x + cos * z)
                 projectile.velocityChanged = true
                 e.world.addParticle(
-                    ParticleTypes.SWEEP_ATTACK,
-                    entityVector.x,
-                    entityVector.y,
-                    entityVector.z,
-                    0.0,
-                    0.0,
-                    0.0
+                    ParticleTypes.SWEEP_ATTACK, entityVector.x, entityVector.y, entityVector.z, 0.0, 0.0, 0.0
                 )
                 player.playSound(SoundEvents.ENTITY_PLAYER_ATTACK_SWEEP, 0.2f, 1f)
                 for (temp in e.world.getEntitiesWithinAABBExcludingEntity(e, sizeSmall.offset(entityVector))) {

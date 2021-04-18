@@ -41,11 +41,7 @@ import kotlin.math.acos
 
 object TCombatUtil {
     private val targets = HashMap<PlayerEntity, List<LivingEntity>>()
-    fun getEntityVectorAngle(
-        @Nonnull from: Entity,
-        @Nonnull to: Entity,
-        @Nonnull sourceToDestVelocity: Vector3d
-    ): Double {
+    fun getEntityVectorAngle(@Nonnull from: Entity, @Nonnull to: Entity, @Nonnull sourceToDestVelocity: Vector3d): Double {
         val sourcePosition = from.positionVec
         val targetPosition = to.positionVec
         val difference = targetPosition.subtract(sourcePosition)
@@ -53,14 +49,7 @@ object TCombatUtil {
     }
 
     @JvmOverloads
-    fun emptyBucket(
-        @Nonnull item: BucketItem,
-        player: PlayerEntity,
-        worldIn: World,
-        posIn: BlockPos,
-        rayTrace: BlockRayTraceResult?,
-        fluid: Fluid? = null
-    ): Boolean {
+    fun emptyBucket(@Nonnull item: BucketItem, player: PlayerEntity, worldIn: World, posIn: BlockPos, rayTrace: BlockRayTraceResult?, fluid: Fluid? = null): Boolean {
         var content = item.fluid
         content = fluid ?: content
         return if (content !is FlowingFluid) {
@@ -70,13 +59,9 @@ object TCombatUtil {
             val block = blockstate.block
             val material = blockstate.material
             val flag = blockstate.isReplaceable(content)
-            val flag1 =
-                blockstate.isAir || flag || block is ILiquidContainer && (block as ILiquidContainer).canContainFluid(
-                    worldIn,
-                    posIn,
-                    blockstate,
-                    content
-                )
+            val flag1 = blockstate.isAir || flag || block is ILiquidContainer && (block as ILiquidContainer).canContainFluid(
+                worldIn, posIn, blockstate, content
+            )
             if (!flag1) {
                 rayTrace != null && emptyBucket(item, player, worldIn, rayTrace.pos.offset(rayTrace.face), null)
             } else if (worldIn.dimensionType.isUltrawarm && content.isIn(FluidTags.WATER)) {
@@ -84,37 +69,19 @@ object TCombatUtil {
                 val j = posIn.y
                 val k = posIn.z
                 worldIn.playSound(
-                    player,
-                    posIn,
-                    SoundEvents.BLOCK_FIRE_EXTINGUISH,
-                    SoundCategory.BLOCKS,
-                    0.5f,
-                    2.6f + (worldIn.rand.nextFloat() - worldIn.rand.nextFloat()) * 0.8f
+                    player, posIn, SoundEvents.BLOCK_FIRE_EXTINGUISH, SoundCategory.BLOCKS, 0.5f, 2.6f + (worldIn.rand.nextFloat() - worldIn.rand.nextFloat()) * 0.8f
                 )
                 for (l in 0..7) {
                     worldIn.addParticle(
-                        ParticleTypes.LARGE_SMOKE,
-                        i.toDouble() + Math.random(),
-                        j.toDouble() + Math.random(),
-                        k.toDouble() + Math.random(),
-                        0.0,
-                        0.0,
-                        0.0
+                        ParticleTypes.LARGE_SMOKE, i.toDouble() + Math.random(), j.toDouble() + Math.random(), k.toDouble() + Math.random(), 0.0, 0.0, 0.0
                     )
                 }
                 true
             } else if (block is ILiquidContainer && (block as ILiquidContainer).canContainFluid(
-                    worldIn,
-                    posIn,
-                    blockstate,
-                    content
-                )
-            ) {
+                        worldIn, posIn, blockstate, content
+                    )) {
                 (block as ILiquidContainer).receiveFluid(
-                    worldIn,
-                    posIn,
-                    blockstate,
-                    content.getStillFluidState(false)
+                    worldIn, posIn, blockstate, content.getStillFluidState(false)
                 )
                 playEmptySound(item, player, worldIn, posIn)
                 true
@@ -123,11 +90,8 @@ object TCombatUtil {
                     worldIn.destroyBlock(posIn, true)
                 }
                 if (!worldIn.setBlockState(
-                        posIn,
-                        fluid!!.defaultState.blockState,
-                        11
-                    ) && !blockstate.fluidState.isSource
-                ) {
+                            posIn, fluid!!.defaultState.blockState, 11
+                        ) && !blockstate.fluidState.isSource) {
                     false
                 } else {
                     playEmptySound(item, player, worldIn, posIn)
@@ -140,8 +104,7 @@ object TCombatUtil {
     fun playEmptySound(@Nonnull item: BucketItem, player: PlayerEntity, worldIn: IWorld, pos: BlockPos) {
         val content = item.fluid
         var soundevent = content.attributes.emptySound
-        if (soundevent == null) soundevent =
-            if (content.isIn(FluidTags.LAVA)) SoundEvents.ITEM_BUCKET_EMPTY_LAVA else SoundEvents.ITEM_BUCKET_EMPTY
+        if (soundevent == null) soundevent = if (content.isIn(FluidTags.LAVA)) SoundEvents.ITEM_BUCKET_EMPTY_LAVA else SoundEvents.ITEM_BUCKET_EMPTY
         worldIn.playSound(player, pos, soundevent, SoundCategory.BLOCKS, 1.0f, 1.0f)
     }
 
@@ -156,8 +119,7 @@ object TCombatUtil {
 
     @Nonnull
     fun getTargets(@Nonnull player: PlayerEntity): List<LivingEntity> {
-        return if (targets.containsKey(player)) targets[player]!!
-            .stream().filter { obj: LivingEntity -> obj.isAlive }.collect(Collectors.toList()) else LinkedList()
+        return if (targets.containsKey(player)) targets[player]!!.stream().filter { obj: LivingEntity -> obj.isAlive }.collect(Collectors.toList()) else LinkedList()
     }
 
     fun setTargets(@Nonnull player: PlayerEntity, @Nonnull list: List<LivingEntity>) {
@@ -186,8 +148,7 @@ object TCombatUtil {
         val f = 16.coerceAtMost(2 + level).toFloat()
         val mutablePos = BlockPos.Mutable()
         for (blockPos in BlockPos.getAllInBoxMutable(
-            pos.add(-f.toDouble(), -1.0, -f.toDouble()),
-            pos.add(f.toDouble(), -1.0, f.toDouble())
+            pos.add(-f.toDouble(), -1.0, -f.toDouble()), pos.add(f.toDouble(), -1.0, f.toDouble())
         )) {
             if (blockPos.withinDistance(living.positionVec, f.toDouble())) {
                 Enchantments.FROST_WALKER
@@ -197,23 +158,15 @@ object TCombatUtil {
                     val blockstate2 = worldIn.getBlockState(blockPos)
                     val isFull = blockstate2.block === Blocks.WATER && blockstate2.get(FlowingFluidBlock.LEVEL) == 0
                     if (blockstate2.material == Material.WATER && isFull && blockstate.isValidPosition(
-                            worldIn,
-                            blockPos
-                        ) && worldIn.placedBlockCollides(
-                            blockstate,
-                            blockPos,
-                            ISelectionContext.dummy()
-                        ) && !ForgeEventFactory.onBlockPlace(
-                            living,
-                            BlockSnapshot.create(worldIn.dimensionKey, worldIn, blockPos),
-                            Direction.UP
-                        )
-                    ) {
+                                worldIn, blockPos
+                            ) && worldIn.placedBlockCollides(
+                                blockstate, blockPos, ISelectionContext.dummy()
+                            ) && !ForgeEventFactory.onBlockPlace(
+                                living, BlockSnapshot.create(worldIn.dimensionKey, worldIn, blockPos), Direction.UP
+                            )) {
                         worldIn.setBlockState(blockPos, blockstate)
                         worldIn.pendingBlockTicks.scheduleTick(
-                            blockPos,
-                            Blocks.FROSTED_ICE,
-                            MathHelper.nextInt(worldIn.rand, 60, 120)
+                            blockPos, Blocks.FROSTED_ICE, MathHelper.nextInt(worldIn.rand, 60, 120)
                         )
                     }
                 }
@@ -277,8 +230,8 @@ object TCombatUtil {
 
     val BLOCK_STATE: IDataSerializer<BlockState> = object : IDataSerializer<BlockState> {
         override fun write(buf: PacketBuffer, value: BlockState) {
-                buf.writeVarInt(Block.getStateId(value))
-            }
+            buf.writeVarInt(Block.getStateId(value))
+        }
 
         override fun read(buf: PacketBuffer): BlockState {
             val i = buf.readVarInt()

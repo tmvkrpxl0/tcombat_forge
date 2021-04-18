@@ -23,11 +23,7 @@ object ArrowSense : AbstractPassiveSkill() {
             ) { o: Entity ->
                 o is ProjectileEntity && o.shooter != player && o.getDistanceSq(player) < 15 * 15 && player.canEntityBeSeen(
                     o
-                ) && TCombatUtil.getEntityToEntityAngle(
-                    o,
-                    player
-                ) < 30 && (o !is ArrowEntity ||
-                        (o as AbstractArrowEntity).inGround)
+                ) && (o !is ArrowEntity || !(o as AbstractArrowEntity).inGround)
             }
             if (list.isEmpty()) return false
             player.playSound(SoundEvents.ENTITY_EXPERIENCE_ORB_PICKUP, SoundCategory.HOSTILE, 1f, 1f)

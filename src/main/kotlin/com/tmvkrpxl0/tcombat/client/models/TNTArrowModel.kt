@@ -18,28 +18,12 @@ class TNTArrowModel : EntityModel<TNTArrowEntity>() {
         box.showModel = true
     }
 
-    override fun setRotationAngles(
-        @Nonnull entityIn: TNTArrowEntity,
-        limbSwing: Float,
-        limbSwingAmount: Float,
-        ageInTicks: Float,
-        netHeadYaw: Float,
-        headPitch: Float
-    ) {
+    override fun setRotationAngles(@Nonnull entityIn: TNTArrowEntity, limbSwing: Float, limbSwingAmount: Float, ageInTicks: Float, netHeadYaw: Float, headPitch: Float) {
     }
 
-    override fun render(
-        @Nonnull matrixStackIn: MatrixStack,
-        @Nonnull bufferIn: IVertexBuilder,
-        packedLightIn: Int,
-        packedOverlayIn: Int,
-        red: Float,
-        green: Float,
-        blue: Float,
-        alpha: Float
-    ) {
+    override fun render(@Nonnull matrixStackIn: MatrixStack, @Nonnull bufferIn: IVertexBuilder, packedLightIn: Int, packedOverlayIn: Int, red: Float, green: Float, blue: Float, alpha: Float) {
         box.setRotationPoint(1f, 1.5f, 0.5f)
-        box.render(matrixStackIn, bufferIn, packedLightIn, packedOverlayIn, red + 2, green, blue, alpha)
+        box.render(matrixStackIn, bufferIn, packedLightIn, packedOverlayIn, red, green, blue, alpha)
     }
 
 }

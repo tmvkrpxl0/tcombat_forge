@@ -8,6 +8,5 @@ import net.minecraft.item.ItemStack
 import net.minecraft.world.World
 
 class SnipeArrowItem(properties: Properties) : ArrowItem(properties) {
-    override fun createArrow(worldIn: World, stack: ItemStack, shooter: LivingEntity): AbstractArrowEntity =
-        SnipeArrowEntity(worldIn, shooter)
+    override fun createArrow(worldIn: World, stack: ItemStack, shooter: LivingEntity): AbstractArrowEntity = SnipeArrowEntity(worldIn, shooter)
 }

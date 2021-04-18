@@ -1,9 +1,11 @@
-package com.tmvkrpxl0.tcombat.client.listeners
+package com.tmvkrpxl0.tcombat.client.events
 
 import com.tmvkrpxl0.tcombat.TCombatMain
+import com.tmvkrpxl0.tcombat.client.key.KeyHandler
 import com.tmvkrpxl0.tcombat.client.renderers.BlockEntityRenderer
 import com.tmvkrpxl0.tcombat.client.renderers.FluidEntityRenderer
 import com.tmvkrpxl0.tcombat.client.renderers.TNTArrowRenderer
+import com.tmvkrpxl0.tcombat.client.renderers.WorldAxeRenderer
 import com.tmvkrpxl0.tcombat.common.entities.TCombatEntityTypes
 import net.minecraft.client.renderer.entity.EntityRendererManager
 import net.minecraft.client.renderer.entity.TippedArrowRenderer
@@ -17,6 +19,7 @@ import net.minecraftforge.fml.event.lifecycle.FMLClientSetupEvent
 object ClientModEventListener {
     @SubscribeEvent
     fun onClientSetup(event: FMLClientSetupEvent) {
+        KeyHandler()
         RenderingRegistry.registerEntityRenderingHandler(TCombatEntityTypes.CUSTOMIZABLE_BLOCK_ENTITY.get()) { renderManager: EntityRendererManager ->
             BlockEntityRenderer(renderManager)
         }
@@ -26,8 +29,11 @@ object ClientModEventListener {
         RenderingRegistry.registerEntityRenderingHandler(TCombatEntityTypes.SNIPE_ARROW.get()) { renderManager: EntityRendererManager ->
             TippedArrowRenderer(renderManager)
         }
-        RenderingRegistry.registerEntityRenderingHandler(TCombatEntityTypes.CUSTOMIZABLE_FLUID_ENTITY.get()){ renderManager: EntityRendererManager ->
+        RenderingRegistry.registerEntityRenderingHandler(TCombatEntityTypes.CUSTOMIZABLE_FLUID_ENTITY.get()) { renderManager: EntityRendererManager ->
             FluidEntityRenderer(renderManager)
+        }
+        RenderingRegistry.registerEntityRenderingHandler(TCombatEntityTypes.WORLD_AXE.get()) { renderManager: EntityRendererManager ->
+            WorldAxeRenderer(renderManager)
         }
     }
 }

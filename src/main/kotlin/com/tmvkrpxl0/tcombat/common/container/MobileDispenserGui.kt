@@ -17,11 +17,7 @@ class MobileDispenserGui(private val mobileDispenser: ItemStack) : INamedContain
         return mobileDispenser.textComponent
     }
 
-    override fun createMenu(
-        windowId: Int,
-        @Nonnull inventory: PlayerInventory,
-        @Nonnull player: PlayerEntity
-    ): Container {
+    override fun createMenu(windowId: Int, @Nonnull inventory: PlayerInventory, @Nonnull player: PlayerEntity): Container {
         val optional = mobileDispenser.getCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY).resolve()
         val container: DispenserContainer = object : DispenserContainer(windowId, inventory) {
             override fun onContainerClosed(@Nonnull playerIn: PlayerEntity) {

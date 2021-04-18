@@ -15,7 +15,7 @@ buildscript {
 apply plugin: 'net.minecraftforge.gradle'
 apply plugin: 'kotlin'
 
-version = '0.1 alpha'
+version = '1.16.5-0.0.5.0'
 group = 'com.tmvkrpxl0.tcombat'
 archivesBaseName = 'tcombat'
 
@@ -102,7 +102,7 @@ jar {
         attributes([
                 "Specification-Title": "tcombat",
                 "Specification-Vendor": "tmvkrpxl0",
-                "Specification-Version": "0.1 alpha",
+                "Specification-Version": "1",
                 "Implementation-Title": project.name,
                 "Implementation-Version": "${version}",
                 "Implementation-Vendor" :"tmvkrpxl0",

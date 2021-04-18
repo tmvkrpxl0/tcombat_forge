@@ -20,23 +20,16 @@ class KeyHandler : AbstractKeyHandler(BINDINGS) {
     companion object {
         private const val CATEGORY = "com.tmvkrpxl0 combat"
         val KB_REFLECT_ARROW = KeyBinding(
-            "Reflect Arrow",
-            KeyConflictContext.IN_GAME,
-            InputMappings.Type.KEYSYM,
-            GLFW.GLFW_KEY_C,
-            CATEGORY
+            "Reflect Arrow", KeyConflictContext.IN_GAME, InputMappings.Type.KEYSYM, GLFW.GLFW_KEY_C, CATEGORY
         )
-        val KB_SET_TARGETS =
-            KeyBinding("Set targets", KeyConflictContext.IN_GAME, InputMappings.Type.KEYSYM, GLFW.GLFW_KEY_X, CATEGORY)
-        val BINDINGS = Builder(10)
-            .addBinding(KB_REFLECT_ARROW, false)
-            .addBinding(KB_SET_TARGETS, false)
+        val KB_SET_TARGETS = KeyBinding("Set targets", KeyConflictContext.IN_GAME, InputMappings.Type.KEYSYM, GLFW.GLFW_KEY_X, CATEGORY)
+        val BINDINGS = Builder(10).addBinding(KB_REFLECT_ARROW, false).addBinding(KB_SET_TARGETS, false)
     }
 
     init {
         ClientRegistry.registerKeyBinding(KB_REFLECT_ARROW)
         ClientRegistry.registerKeyBinding(KB_SET_TARGETS)
-        MinecraftForge.EVENT_BUS.addListener { event: KeyInputEvent -> onKeyInput() }
+        MinecraftForge.EVENT_BUS.addListener { _: KeyInputEvent -> onKeyInput() }
     }
 
     private fun onKeyInput() = keyTick()
@@ -59,13 +52,11 @@ class KeyHandler : AbstractKeyHandler(BINDINGS) {
             val entityIds = livingEntities.stream().mapToInt { obj: LivingEntity -> obj.entityId }.toArray()
             TCombatPacketHandler.INSTANCE.sendToServer(
                 TargetSetPacket(
-                    player.uniqueID,
-                    entityIds
+                    player.uniqueID, entityIds
                 )
             )
         }
     }
 
-    override fun keyUp(kb: KeyBinding) {}
-    //This class is based on MekanismKeyHandler.java from mekanism
+    override fun keyUp(kb: KeyBinding) {} //This class is based on MekanismKeyHandler.java from mekanism
 }
