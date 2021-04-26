@@ -28,21 +28,21 @@ abstract class AbstractKeyHandler(bindings: Builder) {
 
     companion object {
         fun getIsKeyPressed(keyBinding: KeyBinding): Boolean {
-            if (keyBinding.isKeyDown) {
+            if (keyBinding.isDown) {
                 return true
             }
             return if (keyBinding.keyConflictContext.isActive && keyBinding.keyModifier.isActive(keyBinding.keyConflictContext)) { //Manually check in case keyBinding#pressed just never got a chance to be updated
-                isKeyDown(keyBinding)
-            } else KeyModifier.isKeyCodeModifier(keyBinding.key) && isKeyDown(
+                isDown(keyBinding)
+            } else KeyModifier.isKeyCodeModifier(keyBinding.key) && isDown(
                 keyBinding
             ) //If we failed, due to us being a key modifier as our key, check the old way
         }
 
-        private fun isKeyDown(keyBinding: KeyBinding): Boolean {
+        private fun isDown(keyBinding: KeyBinding): Boolean {
             val key = keyBinding.key
-            val keyCode = key.keyCode
-            if (keyCode != InputMappings.INPUT_INVALID.keyCode) {
-                val windowHandle = Minecraft.getInstance().mainWindow.handle
+            val keyCode = key.value
+            if (keyCode != InputMappings.UNKNOWN.value) {
+                val windowHandle = Minecraft.getInstance().window.window
                 try {
                     if (key.type == InputMappings.Type.KEYSYM) {
                         return InputMappings.isKeyDown(windowHandle, keyCode)
@@ -59,7 +59,7 @@ abstract class AbstractKeyHandler(bindings: Builder) {
     fun keyTick() {
         for (i in keyBindings.indices) {
             val keyBinding = keyBindings[i]
-            val state = keyBinding.isKeyDown
+            val state = keyBinding.isDown
             val lastState = keyDown[i]
             if (state != lastState || state && repeatings[i]) {
                 if (state) {

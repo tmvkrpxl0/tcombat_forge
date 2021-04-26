@@ -14,29 +14,29 @@ import net.minecraftforge.event.TickEvent.ServerTickEvent
 object AutoBridge : AbstractPassiveSkill() {
     private val NAME = ResourceLocation(TCombatMain.MODID, "auto_bridge")
     override fun onTick(event: ServerTickEvent, player: PlayerEntity): Boolean {
-        val mainHand = player.heldItemMainhand
-        val offHand = player.heldItemOffhand
+        val mainHand = player.mainHandItem
+        val offHand = player.offhandItem
         if (mainHand.item is BucketItem && offHand.item is BucketItem) {
             val mainBucket = mainHand.item as BucketItem
             val offBucket = offHand.item as BucketItem
             val i1 = if (mainBucket.fluid is WaterFluid) 1 else if (mainBucket.fluid is LavaFluid) 2 else 0
             val i2 = if (offBucket.fluid is WaterFluid) 1 else if (offBucket.fluid is LavaFluid) 2 else 0
             if (i1 + i2 == 3) {
-                var lookVec = player.lookVec
+                var lookVec = player.lookAngle
                 lookVec = lookVec.subtract(0.0, lookVec.y, 0.0)
-                var pos = BlockPos(player.positionVec.add(lookVec))
-                var below = pos.down()
-                val world = player.world
-                if (player.isSneaking) {
+                var pos = BlockPos(player.position().add(lookVec))
+                var below = pos.below()
+                val world = player.level
+                if (player.isShiftKeyDown) {
                     pos = below
-                    below = pos.down()
+                    below = pos.below()
                 }
                 val belowState = world.getBlockState(below)
                 val state = world.getBlockState(pos)
-                if ((belowState.isAir || belowState.isReplaceable(Fluids.FLOWING_WATER)) && (state.isAir || state.isReplaceable(Fluids.FLOWING_WATER))) {
-                    world.setBlockState(below, Fluids.FLOWING_LAVA.defaultState.blockState, 11)
-                    world.setBlockState(pos, Fluids.FLOWING_WATER.defaultState.blockState, 11)
-                    world.setBlockState(pos, Blocks.AIR.defaultState, 1)
+                if ((belowState.isAir || belowState.canBeReplaced(Fluids.FLOWING_WATER)) && (state.isAir || state.canBeReplaced(Fluids.FLOWING_WATER))) {
+                    world.setBlock(below, Fluids.FLOWING_LAVA.defaultFluidState().createLegacyBlock(), 11)
+                    world.setBlock(pos, Fluids.FLOWING_WATER.defaultFluidState().createLegacyBlock(), 11)
+                    world.setBlock(pos, Blocks.AIR.defaultBlockState(), 1)
                 }
                 return true
             }

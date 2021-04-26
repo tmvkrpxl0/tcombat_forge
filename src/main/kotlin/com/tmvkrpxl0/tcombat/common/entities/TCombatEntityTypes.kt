@@ -3,6 +3,7 @@ package com.tmvkrpxl0.tcombat.common.entities
 import com.tmvkrpxl0.tcombat.TCombatMain
 import com.tmvkrpxl0.tcombat.common.entities.misc.CustomizableBlockEntity
 import com.tmvkrpxl0.tcombat.common.entities.misc.CustomizableFluidEntity
+import com.tmvkrpxl0.tcombat.common.entities.projectile.ReflectiveArrowEntity
 import com.tmvkrpxl0.tcombat.common.entities.projectile.SnipeArrowEntity
 import com.tmvkrpxl0.tcombat.common.entities.projectile.TNTArrowEntity
 import com.tmvkrpxl0.tcombat.common.entities.projectile.WorldAxeEntity
@@ -17,37 +18,37 @@ import net.minecraftforge.registries.ForgeRegistries
 class TCombatEntityTypes(eventBus: IEventBus) {
     companion object {
         val ENTITIES: DeferredRegister<EntityType<*>> = DeferredRegister.create(ForgeRegistries.ENTITIES, TCombatMain.MODID)
-        val CUSTOMIZABLE_BLOCK_ENTITY: RegistryObject<EntityType<CustomizableBlockEntity>> = ENTITIES.register(
-            "customizable_block_entity"
-        ) {
-            EntityType.Builder.create({ type: EntityType<CustomizableBlockEntity>, world: World ->
+        val CUSTOMIZABLE_BLOCK_ENTITY: RegistryObject<EntityType<CustomizableBlockEntity>> = ENTITIES.register("customizable_block_entity") {
+            EntityType.Builder.of({ type: EntityType<CustomizableBlockEntity>, world: World ->
                 CustomizableBlockEntity(type, world)
-            }, EntityClassification.MISC).size(1f, 1f).build("customizable_block_entity")
+            }, EntityClassification.MISC).sized(1f, 1f).build("customizable_block_entity")
         }
-        val CUSTOMIZABLE_FLUID_ENTITY: RegistryObject<EntityType<CustomizableFluidEntity>> = ENTITIES.register(
-            "customizable_fluid_entity"
-        ) {
-            EntityType.Builder.create({ type: EntityType<CustomizableFluidEntity>, world: World ->
+        val CUSTOMIZABLE_FLUID_ENTITY: RegistryObject<EntityType<CustomizableFluidEntity>> = ENTITIES.register("customizable_fluid_entity") {
+            EntityType.Builder.of({ type: EntityType<CustomizableFluidEntity>, world: World ->
                 CustomizableFluidEntity(type, world)
-            }, EntityClassification.MISC).size(1f, 1f).build("customizable_fluid_entity")
+            }, EntityClassification.MISC).sized(1f, 1f).build("customizable_fluid_entity")
         }
-        val TNT_ARROW: RegistryObject<EntityType<TNTArrowEntity>> = ENTITIES.register(
-            "tnt_arrow"
-        ) {
-            EntityType.Builder.create({ tntArrowType: EntityType<TNTArrowEntity>, world: World ->
+        val TNT_ARROW: RegistryObject<EntityType<TNTArrowEntity>> = ENTITIES.register("tnt_arrow"){
+            EntityType.Builder.of({ tntArrowType: EntityType<TNTArrowEntity>, world: World ->
                 TNTArrowEntity(tntArrowType, world)
-            }, EntityClassification.MISC).size(0.5f, 0.5f).build("tnt_arrow")
+            }, EntityClassification.MISC).sized(0.5f, 0.5f).build("tnt_arrow")
         }
         val SNIPE_ARROW: RegistryObject<EntityType<SnipeArrowEntity>> = ENTITIES.register("snipe_arrow") {
-            EntityType.Builder.create({ snipeArrowType: EntityType<SnipeArrowEntity>, world: World ->
+            EntityType.Builder.of({ snipeArrowType: EntityType<SnipeArrowEntity>, world: World ->
                 SnipeArrowEntity(snipeArrowType, world)
-            }, EntityClassification.MISC).size(0.5f, 0.5f).build("snipe_arrow")
+            }, EntityClassification.MISC).sized(0.5f, 0.5f).build("snipe_arrow")
         }
 
         val WORLD_AXE: RegistryObject<EntityType<WorldAxeEntity>> = ENTITIES.register("world_axe"){
-            EntityType.Builder.create({ worldAxeType: EntityType<WorldAxeEntity>, world: World->
+            EntityType.Builder.of({ worldAxeType: EntityType<WorldAxeEntity>, world: World->
                 WorldAxeEntity(worldAxeType, world)
-            }, EntityClassification.MISC).size(0.5f, 0.5f).disableSummoning().immuneToFire().updateInterval(1).build("world_axe")
+            }, EntityClassification.MISC).sized(0.5f, 0.5f).noSummon().fireImmune().updateInterval(1).build("world_axe")
+        }
+
+        val REFLECTIVE_ARROW: RegistryObject<EntityType<ReflectiveArrowEntity>> = ENTITIES.register("reflective_arrow"){
+            EntityType.Builder.of({reflectiveType: EntityType<ReflectiveArrowEntity>, world: World->
+                ReflectiveArrowEntity(reflectiveType, world)
+            }, EntityClassification.MISC).sized(0.5f, 0.5f).build("reflective_arrow")
         }
     }
 

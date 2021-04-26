@@ -11,18 +11,18 @@ class TNTArrowModel : EntityModel<TNTArrowEntity>() {
     private val box: ModelRenderer = ModelRenderer(this, 0, 0)
 
     init {
-        box.setTextureSize(64, 64)
-        textureHeight = 64
-        textureWidth = 64
+        box.setTexSize(64, 64)
+        texHeight = 64
+        texWidth = 64
         box.addBox(-8f, -1f, -1f, 8f, 1f, 1f, 0f, 0f, 0f)
-        box.showModel = true
+        box.visible = true
+        box.setPos(1f, 1.5f, 0.5f)
     }
 
-    override fun setRotationAngles(@Nonnull entityIn: TNTArrowEntity, limbSwing: Float, limbSwingAmount: Float, ageInTicks: Float, netHeadYaw: Float, headPitch: Float) {
+    override fun setupAnim(@Nonnull entityIn: TNTArrowEntity, limbSwing: Float, limbSwingAmount: Float, ageInTicks: Float, netHeadYaw: Float, headPitch: Float) {
     }
 
-    override fun render(@Nonnull matrixStackIn: MatrixStack, @Nonnull bufferIn: IVertexBuilder, packedLightIn: Int, packedOverlayIn: Int, red: Float, green: Float, blue: Float, alpha: Float) {
-        box.setRotationPoint(1f, 1.5f, 0.5f)
+    override fun renderToBuffer(@Nonnull matrixStackIn: MatrixStack, @Nonnull bufferIn: IVertexBuilder, packedLightIn: Int, packedOverlayIn: Int, red: Float, green: Float, blue: Float, alpha: Float) {
         box.render(matrixStackIn, bufferIn, packedLightIn, packedOverlayIn, red, green, blue, alpha)
     }
 

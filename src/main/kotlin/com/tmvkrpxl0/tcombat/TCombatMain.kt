@@ -4,7 +4,7 @@ import com.tmvkrpxl0.tcombat.common.enchants.TCombatEnchants
 import com.tmvkrpxl0.tcombat.common.entities.TCombatEntityTypes
 import com.tmvkrpxl0.tcombat.common.items.TCombatItems
 import com.tmvkrpxl0.tcombat.common.network.packets.TCombatPacketHandler
-import com.tmvkrpxl0.tcombat.common.util.TCombatUtil
+import com.tmvkrpxl0.tcombat.common.util.TCombatDataSerializers
 import net.minecraft.network.datasync.DataSerializers
 import net.minecraftforge.common.MinecraftForge
 import net.minecraftforge.fml.common.Mod
@@ -25,8 +25,8 @@ object TCombatMain {
         TCombatEntityTypes.ENTITIES.register(bus)
         TCombatItems.ITEMS.register(bus)
         TCombatEnchants.ENCHANTMENTS.register(bus)
-        DataSerializers.registerSerializer(TCombatUtil.UNIQUE_ID)
-        DataSerializers.registerSerializer(TCombatUtil.BLOCK_STATE)
-        DataSerializers.registerSerializer(TCombatUtil.FLUID_STATE)
+        DataSerializers.registerSerializer(TCombatDataSerializers.UNIQUE_ID)
+        DataSerializers.registerSerializer(TCombatDataSerializers.BLOCK_STATE)
+        DataSerializers.registerSerializer(TCombatDataSerializers.FLUID_STATE)
     }
 }

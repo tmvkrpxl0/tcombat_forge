@@ -18,20 +18,20 @@ class TNTArrowRenderer(renderManagerIn: EntityRendererManager) : ArrowRenderer<T
     private val model: TNTArrowModel = TNTArrowModel()
 
     @Nonnull
-    override fun getEntityTexture(@Nonnull entity: TNTArrowEntity): ResourceLocation {
-        return TippedArrowRenderer.RES_ARROW
+    override fun getTextureLocation(@Nonnull entity: TNTArrowEntity): ResourceLocation {
+        return TippedArrowRenderer.NORMAL_ARROW_LOCATION
     }
 
     override fun render(@Nonnull entityIn: TNTArrowEntity, entityYaw: Float, partialTicks: Float, @Nonnull matrixStackIn: MatrixStack, @Nonnull bufferIn: IRenderTypeBuffer, packedLightIn: Int) {
-        matrixStackIn.push()
+        matrixStackIn.pushPose()
         //Rotate box that this will render
-        matrixStackIn.rotate(Vector3f.YP.rotationDegrees(MathHelper.lerp(partialTicks, entityIn.prevRotationYaw, entityIn.rotationYaw) - 90f))
-        matrixStackIn.rotate(Vector3f.ZP.rotationDegrees(MathHelper.lerp(partialTicks, entityIn.prevRotationPitch, entityIn.rotationPitch)))
+        matrixStackIn.mulPose(Vector3f.YP.rotationDegrees(MathHelper.lerp(partialTicks, entityIn.yRotO, entityIn.yRot) - 90f))
+        matrixStackIn.mulPose(Vector3f.ZP.rotationDegrees(MathHelper.lerp(partialTicks, entityIn.xRotO, entityIn.xRot)))
         //render the box
-        model.render(
-            matrixStackIn, bufferIn.getBuffer(model.getRenderType(BOX)), packedLightIn, OverlayTexture.getPackedUV(0f, false), 1f, 1f, 1f, 1f
+        model.renderToBuffer(
+            matrixStackIn, bufferIn.getBuffer(model.renderType(BOX)), packedLightIn, OverlayTexture.pack(0f, false), 1f, 1f, 1f, 1f
         )
-        matrixStackIn.pop()
+        matrixStackIn.popPose()
         super.render(entityIn, entityYaw, partialTicks, matrixStackIn, bufferIn, packedLightIn)
     }
 

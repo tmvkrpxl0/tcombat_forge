@@ -4,5 +4,7 @@
     "enchantment.tcombat.focus": "Focus",
     "item.tcombat.tnt_arrow": "TNT arrow",
     "enchantment.tcombat.crossbow_flame": "Crossbow Flame",
-    "item.tcombat.snipe_arrow": "Snipe arrow"
+    "item.tcombat.snipe_arrow": "Snipe arrow",
+    "item.tcombat.reflective_arrow": "Reflective arrow",
+    "entity.tcombat.reflective_arrow": "Reflective arrow"
 }

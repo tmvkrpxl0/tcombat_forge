@@ -5,12 +5,9 @@ import com.tmvkrpxl0.tcombat.common.skills.AbstractActiveSkill
 import com.tmvkrpxl0.tcombat.common.skills.AbstractSkill
 import com.tmvkrpxl0.tcombat.common.util.TCombatUtil
 import net.minecraft.block.Block
-import net.minecraft.entity.LivingEntity
 import net.minecraft.entity.player.PlayerEntity
 import net.minecraft.network.PacketBuffer
 import net.minecraft.util.ResourceLocation
-import net.minecraft.util.Util
-import net.minecraft.util.text.StringTextComponent
 import net.minecraftforge.fml.common.thread.SidedThreadGroups
 import net.minecraftforge.fml.network.NetworkEvent
 import net.minecraftforge.fml.network.NetworkRegistry
@@ -43,41 +40,38 @@ object TCombatPacketHandler {
             contextSupplier.get().packetHandled = true
         })
         id++
-        INSTANCE.registerMessage(id, TargetSetPacket::class.java, { targetSetPacket: TargetSetPacket, packetBuffer: PacketBuffer ->
-            packetBuffer.writeUniqueId(targetSetPacket.uniqueID)
-            packetBuffer.writeVarIntArray(targetSetPacket.entityIds())
+        INSTANCE.registerMessage(id, TargetRequestPacket::class.java, { targetRequest: TargetRequestPacket, packetBuffer: PacketBuffer ->
+            packetBuffer.writeVarInt(targetRequest.type.ordinal)
         }, { packetBuffer: PacketBuffer ->
-            val uuid = packetBuffer.readUniqueId()
-            val entityIds = packetBuffer.readVarIntArray(100)
-            TargetSetPacket(uuid, entityIds)
-        }) { targetSetPacket: TargetSetPacket, contextSupplier: Supplier<NetworkEvent.Context> ->
-            val list = LinkedList<LivingEntity>()
-            val playerEntity = contextSupplier.get().sender
-            val world = playerEntity!!.world
-            contextSupplier.get().enqueueWork {
-                for (i in targetSetPacket.entityIds()) {
-                    val entity = world.getEntityByID(i)
-                    if (entity is LivingEntity) list.add(entity)
+            val type = TargetRequestPacket.RequestType.values()[packetBuffer.readVarInt()]
+            return@registerMessage TargetRequestPacket(type)
+        }) { targetRequest: TargetRequestPacket, contextSupplier: Supplier<NetworkEvent.Context> ->
+            val type = targetRequest.type
+            val player = contextSupplier.get().sender!!
+            contextSupplier.get().enqueueWork{
+                when(type){
+                    TargetRequestPacket.RequestType.SET-> TCombatUtil.setTargets(player)
+                    TargetRequestPacket.RequestType.UNSET-> TCombatUtil.setTargets(player, LinkedList())
+                    TargetRequestPacket.RequestType.PICK_CLOSE->{
+
+                    }
                 }
-                TCombatUtil.setTargets(playerEntity, list)
-                playerEntity.sendMessage(
-                    StringTextComponent("Succeed! Count: " + TCombatUtil.getTargets(playerEntity).size), Util.DUMMY_UUID
-                )
             }
+
             contextSupplier.get().packetHandled = true
         }
         id++
         INSTANCE.registerMessage(id, CBSizeRequestPacket::class.java, { sizeRequestPacket: CBSizeRequestPacket, packetBuffer: PacketBuffer ->
-            packetBuffer.writeVarInt(Block.getStateId(sizeRequestPacket.blockState))
+            packetBuffer.writeVarInt(Block.getId(sizeRequestPacket.blockState))
             packetBuffer.writeVarInt(sizeRequestPacket.uniqueId)
         }, { packetBuffer: PacketBuffer ->
-            val blockState = Block.getStateById(packetBuffer.readVarInt())
+            val blockState = Block.stateById(packetBuffer.readVarInt())
             val uniqueId = packetBuffer.readVarInt()
             CBSizeRequestPacket(blockState, uniqueId)
         }) { sizeRequestPacket: CBSizeRequestPacket, contextSupplier: Supplier<NetworkEvent.Context> ->
             if (Thread.currentThread().threadGroup == SidedThreadGroups.CLIENT) throw IllegalStateException("CBSizeRequestPacket should only be sent from client to server!!!")
             contextSupplier.get().enqueueWork {
-
+                TODO("Not Implemented!")
             }
         }
     }

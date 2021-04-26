@@ -17,8 +17,8 @@ class TNTArrowItem(properties: Properties) : ArrowItem(properties) {
     override fun createArrow(worldIn: World, stack: ItemStack, shooter: LivingEntity): AbstractArrowEntity = TNTArrowEntity(TCombatEntityTypes.TNT_ARROW.get(), worldIn, shooter)
 
     init {
-        DispenserBlock.registerDispenseBehavior(this, object : ProjectileDispenseBehavior() {
-            override fun getProjectileEntity(worldIn: World, position: IPosition, stackIn: ItemStack): ProjectileEntity = TNTArrowEntity(worldIn, position.x, position.y, position.z)
+        DispenserBlock.registerBehavior(this, object : ProjectileDispenseBehavior() {
+            override fun getProjectile(worldIn: World, position: IPosition, stackIn: ItemStack): ProjectileEntity = TNTArrowEntity(worldIn, position.x(), position.y(), position.z())
         })
     }
 }

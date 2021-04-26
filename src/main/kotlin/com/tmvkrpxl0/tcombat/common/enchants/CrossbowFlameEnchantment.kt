@@ -5,11 +5,11 @@ import net.minecraft.enchantment.EnchantmentType
 import net.minecraft.inventory.EquipmentSlotType
 
 class CrossbowFlameEnchantment(rarityIn: Rarity, vararg slots: EquipmentSlotType) : Enchantment(rarityIn, EnchantmentType.CROSSBOW, slots) {
-    override fun getMinEnchantability(enchantmentLevel: Int): Int {
+    override fun getMinCost(enchantmentLevel: Int): Int {
         return 20
     }
 
-    override fun getMaxEnchantability(enchantmentLevel: Int): Int {
+    override fun getMaxCost(enchantmentLevel: Int): Int {
         return 50
     }
 

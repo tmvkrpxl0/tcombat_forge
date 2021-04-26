@@ -12,11 +12,10 @@ import net.minecraft.util.ActionResult
 import net.minecraft.util.Hand
 import net.minecraft.world.World
 import net.minecraftforge.common.capabilities.ICapabilityProvider
-import java.lang.IllegalStateException
 
 class WorldAxeItem(properties:Properties): AxeItem(ItemTier.NETHERITE, 5.0f, -3.0f, properties) {
-    override fun onItemRightClick(world: World, player: PlayerEntity, hand: Hand): ActionResult<ItemStack> {
-        val itemStack = player.getHeldItem(hand)
+    override fun use(world: World, player: PlayerEntity, hand: Hand): ActionResult<ItemStack> {
+        val itemStack = player.getItemInHand(hand)
         if(itemStack.item !== this){
             throw IllegalStateException("Player right clicked item that is not on their hand!!")
         }
@@ -26,19 +25,19 @@ class WorldAxeItem(properties:Properties): AxeItem(ItemTier.NETHERITE, 5.0f, -3.
             if(entityHolder.getEntity()==null || !entityHolder.getEntity()!!.isAlive){
                 val worldAxeEntity = WorldAxeEntity(player, itemStack)
                 entityHolder.setEntity(worldAxeEntity)
-                world.addEntity(worldAxeEntity)
-                worldAxeEntity.motion = player.lookVec.mul(5.0,5.0,5.0)
-                worldAxeEntity.velocityChanged = true
-                ActionResult.resultSuccess(itemStack)
+                world.addFreshEntity(worldAxeEntity)
+                worldAxeEntity.deltaMovement = player.lookAngle.multiply(5.0,5.0,5.0)
+                worldAxeEntity.hurtMarked = true
+                ActionResult.success(itemStack)
             }else{
-                ActionResult.resultFail(itemStack)
+                ActionResult.fail(itemStack)
             }
         }else{
-            ActionResult.resultFail(itemStack)
+            ActionResult.fail(itemStack)
         }
     }
 
-    override fun initCapabilities(stack: ItemStack, nbt: CompoundNBT?): ICapabilityProvider? {
+    override fun initCapabilities(stack: ItemStack, nbt: CompoundNBT?): ICapabilityProvider {
         return ItemEntityConnectionProvider()
     }
 }

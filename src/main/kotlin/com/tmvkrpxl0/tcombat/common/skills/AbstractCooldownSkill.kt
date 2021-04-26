@@ -23,7 +23,7 @@ abstract class AbstractCooldownSkill : AbstractActiveSkill(), IForgeRegistryEntr
     }
 
     override fun execute(player: ServerPlayerEntity): Boolean {
-        if (!isAvailable) return false
+        if (!player.isCreative && !isAvailable) return false
         currentCooldownTicks = maxCooldownTicks
         return executeCooldown(player)
     }

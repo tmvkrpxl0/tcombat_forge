@@ -1,7 +1,9 @@
 package com.tmvkrpxl0.tcombat.common.entities.misc
 
 import com.tmvkrpxl0.tcombat.common.entities.TCombatEntityTypes
+import com.tmvkrpxl0.tcombat.common.util.TCombatDataSerializers
 import com.tmvkrpxl0.tcombat.common.util.TCombatUtil
+import com.tmvkrpxl0.tcombat.common.util.VanilaCopy
 import net.minecraft.entity.Entity
 import net.minecraft.entity.EntityType
 import net.minecraft.entity.player.PlayerEntity
@@ -24,82 +26,83 @@ class CustomizableFluidEntity : Entity, ICustomizableEntity {
     lateinit var owner: UUID
 
     companion object {
-        val FLUID_STATE: DataParameter<FluidState> = EntityDataManager.createKey(CustomizableFluidEntity::class.java, TCombatUtil.FLUID_STATE)
+        val FLUID_STATE: DataParameter<FluidState> = EntityDataManager.defineId(CustomizableFluidEntity::class.java, TCombatDataSerializers.FLUID_STATE)
     }
 
     constructor(type: EntityType<*>, world: World) : super(type, world)
 
-    constructor(x: Double, y: Double, z: Double, player: PlayerEntity, fluidState: FluidState) : this(TCombatEntityTypes.CUSTOMIZABLE_FLUID_ENTITY.get(), player.world) {
-        owner = player.uniqueID
-        this.setPosition(x, y, z)
+    constructor(x: Double, y: Double, z: Double, player: PlayerEntity, fluidState: FluidState) : this(TCombatEntityTypes.CUSTOMIZABLE_FLUID_ENTITY.get(), player.level) {
+        owner = player.uuid
+        this.setPos(x, y, z)
         this.setFluidState(fluidState)
+
     }
 
     override fun tick() {
-        if (!this.world.isRemote) {
+        if (!this.level.isClientSide) {
             if (this.getOwner() == null || !this.getOwner()!!.isAlive) this.remove()
         }
         super.tick()
     }
 
-    override fun getOwner(): PlayerEntity? = this.world.getPlayerByUuid(getOwnerId())
+    override fun getOwner(): PlayerEntity? = this.level.getPlayerByUUID(getOwnerId())
 
     override fun getOwnerId(): UUID = this.owner
 
-    fun getFluidState(): FluidState = this.dataManager.get(FLUID_STATE)
+    fun getFluidState(): FluidState = this.entityData.get(FLUID_STATE)
 
-    fun setFluidState(fluidState: FluidState) = this.dataManager.set(FLUID_STATE, fluidState)
+    fun setFluidState(fluidState: FluidState) = this.entityData.set(FLUID_STATE, fluidState)
 
-    override fun registerData() {
-        this.dataManager.register(FLUID_STATE, Fluids.EMPTY.defaultState)
+    override fun defineSynchedData() {
+        this.entityData.define(FLUID_STATE, Fluids.EMPTY.defaultFluidState())
     }
 
-    override fun readAdditional(compound: CompoundNBT) {
-        this.owner = compound.getUniqueId("Owner")
-        this.setFluidState(TCombatUtil.readFluidState(compound.getCompound("FluidState")))
+    override fun readAdditionalSaveData(compound: CompoundNBT) {
+        this.owner = compound.getUUID("Owner")
+        this.setFluidState(VanilaCopy.readFluidState(compound.getCompound("FluidState")))
     }
 
-    override fun writeAdditional(compound: CompoundNBT) {
-        compound.putUniqueId("Owner", getOwnerId())
-        compound.put("FluidState", TCombatUtil.writeFluidState(getFluidState()))
+    override fun addAdditionalSaveData(compound: CompoundNBT) {
+        compound.putUUID("Owner", getOwnerId())
+        compound.put("FluidState", VanilaCopy.writeFluidState(getFluidState()))
     }
 
-    override fun createSpawnPacket(): IPacket<*> {
+    override fun getAddEntityPacket(): IPacket<*> {
         return NetworkHooks.getEntitySpawningPacket(this)
     }
 
     override fun toWorld() {
-        val b = this.world.getBlockState(this.position)
-        if (!b.isReplaceable(getFluidState().fluid)) {
-            this.world.setBlockState(this.position, getFluidState().blockState)
+        val b = this.level.getBlockState(this.blockPosition())
+        if (!b.canBeReplaced(getFluidState().type)) {
+            this.level.setBlockAndUpdate(this.blockPosition(), getFluidState().createLegacyBlock())
         }
         this.remove()
     }
 
     override fun writeSpawnData(buffer: PacketBuffer) {
-        buffer.writeUniqueId(this.getOwnerId())
+        buffer.writeUUID(this.getOwnerId())
     }
 
     override fun readSpawnData(additionalData: PacketBuffer) {
-        this.owner = additionalData.readUniqueId()
+        this.owner = additionalData.readUUID()
     }
 
     override fun remove() {
-        if (this.world.isRemote) {
-            this.world.playSound(this.getOwner(), this.position, SoundEvents.BLOCK_FIRE_EXTINGUISH, SoundCategory.PLAYERS, 0.5f, 1f)
+        if (this.level.isClientSide) {
+            this.level.playSound(this.getOwner(), this.blockPosition(), SoundEvents.FIRE_EXTINGUISH, SoundCategory.PLAYERS, 0.5f, 1f)
             for (i in 0..5) {
-                val d0 = rand.nextGaussian() * 0.01
-                val d1 = rand.nextGaussian() * 0.01
-                val d2 = rand.nextGaussian() * 0.01
-                world.addParticle(ParticleTypes.POOF, getPosXRandom(0.2), this.posYRandom, getPosZRandom(0.2), d0, d1, d2)
+                val d0 = random.nextGaussian() * 0.01
+                val d1 = random.nextGaussian() * 0.01
+                val d2 = random.nextGaussian() * 0.01
+                this.level.addParticle(ParticleTypes.POOF, getRandomX(0.2), this.randomY, this.getRandomZ(0.2), d0, d1, d2)
             }
         }
 
         super.remove()
     }
 
-    override fun applyEntityCollision(p_70108_1_: Entity) {
-        super.applyEntityCollision(p_70108_1_)
+    override fun push(p_70108_1_: Entity) {
+        super.push(p_70108_1_)
     }
 
     fun onCollideWithCBFluid(other: CustomizableFluidEntity) {}

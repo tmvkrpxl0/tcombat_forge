@@ -1,8 +1,8 @@
 package com.tmvkrpxl0.tcombat.common.entities.projectile
 
 import com.tmvkrpxl0.tcombat.common.entities.TCombatEntityTypes
-import com.tmvkrpxl0.tcombat.common.items.TCombatItems
 import com.tmvkrpxl0.tcombat.common.events.EntityEventListener
+import com.tmvkrpxl0.tcombat.common.items.TCombatItems
 import net.minecraft.entity.EntityType
 import net.minecraft.entity.LivingEntity
 import net.minecraft.entity.projectile.AbstractArrowEntity
@@ -23,7 +23,7 @@ class TNTArrowEntity : AbstractArrowEntity {
         TCombatEntityTypes.TNT_ARROW.get(), x, y, z, worldIn
     )
 
-    constructor(tntArrowType: EntityType<TNTArrowEntity>, world: World) : super(tntArrowType, world)
+    constructor(tntArrowType: EntityType<TNTArrowEntity>, worldIn: World) : super(tntArrowType, worldIn)
 
     constructor(entityType: EntityType<TNTArrowEntity>, worldIn: World, shooter: LivingEntity) : super(
         entityType, shooter, worldIn
@@ -32,40 +32,40 @@ class TNTArrowEntity : AbstractArrowEntity {
 
     override fun tick() {
         super.tick()
-        if (isWet) explode = false
+        if (this.isInWaterRainOrBubble) explode = false
         if (explode) {
             if (isInLava) {
-                val flag = ForgeEventFactory.getMobGriefingEvent(world, this.shooter)
-                world.createExplosion(
-                    this, this.posX, this.posY, this.posZ, (if (isCritical) 4 else 2).toFloat(), flag && isBurning, if (flag) Explosion.Mode.BREAK else Explosion.Mode.NONE
+                val flag = ForgeEventFactory.getMobGriefingEvent(this.level, this.owner)
+                level.explode(
+                    this, this.x, this.y, this.z, (if (this.isCritArrow) 4 else 2).toFloat(), flag && this.isOnFire, if (flag) Explosion.Mode.BREAK else Explosion.Mode.NONE
                 )
                 this.remove()
                 return
             }
-            val lookVec = this.lookVec.normalize()
-            world.addParticle(ParticleTypes.SMOKE, posX - (lookVec.x/2), posY - (lookVec.y/2), posZ - (lookVec.z/2), 0.0, 0.0, 0.0)
+            val lookVec = this.lookAngle.normalize()
+            level.addParticle(ParticleTypes.SMOKE, x - (lookVec.x/2), this.y - (lookVec.y/2), this.z - (lookVec.z/2), 0.0, 0.0, 0.0)
         }
     }
 
-    override fun onImpact(result: RayTraceResult) {
-        super.onImpact(result)
-        if (this.shooter is LivingEntity) EntityEventListener.explosionImmune.add(this.shooter as LivingEntity)
-        if (!world.isRemote() && explode && !isWet) {
-            val flag = ForgeEventFactory.getMobGriefingEvent(world, this.shooter)
-            world.createExplosion(
-                this, this.posX, this.posY, this.posZ, (if (isCritical) 4 else 2).toFloat(), flag && isBurning, if (flag) Explosion.Mode.BREAK else Explosion.Mode.NONE
+    override fun onHit(result: RayTraceResult) {
+        super.onHit(result)
+        if (this.owner is LivingEntity) EntityEventListener.explosionImmune.add(this.owner as LivingEntity)
+        if (!level.isClientSide && explode && !this.isInWaterRainOrBubble) {
+            val flag = ForgeEventFactory.getMobGriefingEvent(level, this.owner)
+            level.explode(
+                this, this.x, this.y, this.z, (if (this.isCritArrow) 4 else 2).toFloat(), flag && this.isOnFire, if (flag) Explosion.Mode.BREAK else Explosion.Mode.NONE
             )
             this.remove()
         }
     }
 
     @Nonnull
-    override fun getArrowStack(): ItemStack {
+    override fun getPickupItem(): ItemStack {
         return ItemStack(TCombatItems.TNT_ARROW.get())
     }
 
     @Nonnull
-    override fun createSpawnPacket(): IPacket<*> {
+    override fun getAddEntityPacket(): IPacket<*> {
         return NetworkHooks.getEntitySpawningPacket(this)
     }
 }

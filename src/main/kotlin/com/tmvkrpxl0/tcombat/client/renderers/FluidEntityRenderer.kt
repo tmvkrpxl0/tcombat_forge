@@ -17,26 +17,26 @@ import javax.annotation.Nonnull
 class FluidEntityRenderer(renderManager: EntityRendererManager) : EntityRenderer<CustomizableFluidEntity>(renderManager) {
     override fun render(entityIn: CustomizableFluidEntity, entityYaw: Float, partialTicks: Float, @Nonnull matrixStackIn: MatrixStack, @Nonnull bufferIn: IRenderTypeBuffer, packedLightIn: Int) {
         val fluidState = entityIn.getFluidState()
-        val blockPos = BlockPos(entityIn.posX, entityIn.boundingBox.maxY, entityIn.posZ)
+        val blockPos = BlockPos(entityIn.x, entityIn.boundingBox.maxY, entityIn.z)
         if (!fluidState.isEmpty) {
-            val world = entityIn.world
-            val blockRendererDispatcher = Minecraft.getInstance().blockRendererDispatcher
-            matrixStackIn.push()
+            val world = entityIn.level
+            val blockRendererDispatcher = Minecraft.getInstance().blockRenderer
+            matrixStackIn.pushPose()
             matrixStackIn.translate((blockPos.x and 15).toDouble(), (blockPos.y and 15).toDouble(), (blockPos.z and 15).toDouble())
-            for (type in RenderType.getBlockRenderTypes()) {
+            for (type in RenderType.chunkBufferLayers()) {
                 if (RenderTypeLookup.canRenderInLayer(fluidState, type)) {
                     ForgeHooksClient.setRenderLayer(type)
-                    blockRendererDispatcher.renderFluid(blockPos, world, bufferIn.getBuffer(type), fluidState)
+                    blockRendererDispatcher.renderLiquid(blockPos, world, bufferIn.getBuffer(type), fluidState)
                 }
             }
             ForgeHooksClient.setRenderLayer(null)
-            matrixStackIn.pop()
+            matrixStackIn.popPose()
             super.render(entityIn, entityYaw, partialTicks, matrixStackIn, bufferIn, packedLightIn)
         }
     }
 
     @Nonnull
-    override fun getEntityTexture(@Nonnull entity: CustomizableFluidEntity): ResourceLocation {
-        return AtlasTexture.LOCATION_BLOCKS_TEXTURE
+    override fun getTextureLocation(@Nonnull entity: CustomizableFluidEntity): ResourceLocation {
+        return AtlasTexture.LOCATION_BLOCKS
     }
 }

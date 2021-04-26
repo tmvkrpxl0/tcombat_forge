@@ -16,13 +16,13 @@ object ItemEventListener {
     fun onUseTick(event: LivingEntityUseItemEvent.Start) {
         TCombatMain.LOGGER.info(event.duration)
         if (event.item.item === Items.CROSSBOW || event.item.item === Items.BOW) {
-            if (event.entityLiving.isPotionActive(Effects.STRENGTH)) {
-                val effectInstance = event.entityLiving.getActivePotionEffect(Effects.STRENGTH)
+            if (event.entityLiving.hasEffect(Effects.DAMAGE_BOOST)) {
+                val effectInstance = event.entityLiving.getEffect(Effects.DAMAGE_BOOST)
                 val amplifier = effectInstance!!.amplifier
                 event.duration = event.duration - 3 * amplifier
             }
-            if (event.entityLiving.isPotionActive(Effects.HASTE)) {
-                val effectInstance = event.entityLiving.getActivePotionEffect(Effects.HASTE)
+            if (event.entityLiving.hasEffect(Effects.DIG_SPEED)) {
+                val effectInstance = event.entityLiving.getEffect(Effects.DIG_SPEED)
                 val amplifier = effectInstance!!.amplifier
                 event.duration = event.duration - 3 * amplifier
             }
@@ -33,10 +33,10 @@ object ItemEventListener {
     fun onUse(event: LivingEntityUseItemEvent.Tick) {
         if (event.item.item === Items.CROSSBOW || event.item.item === Items.BOW) {
             if (event.duration <= 0) {
-                if (event.entityLiving.isSneaking) {
+                if (event.entityLiving.isShiftKeyDown) {
                     event.isCanceled = true
-                    event.item.onPlayerStoppedUsing(event.entityLiving.world, event.entityLiving, 0)
-                    event.entityLiving.resetActiveHand()
+                    event.item.releaseUsing(event.entityLiving.level, event.entityLiving, 0)
+                    event.entityLiving.stopUsingItem()
                 }
             }
         }

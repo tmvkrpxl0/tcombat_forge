@@ -29,14 +29,14 @@ import javax.annotation.Nonnull
 
 class MobileDispenser(properties: Properties) : Item(properties) {
     @Nonnull
-    override fun onItemRightClick(worldIn: World, @Nonnull playerIn: PlayerEntity, @Nonnull handIn: Hand): ActionResult<ItemStack> {
-        if (!worldIn.isRemote) {
+    override fun use(worldIn: World, @Nonnull playerIn: PlayerEntity, @Nonnull handIn: Hand): ActionResult<ItemStack> {
+        if (!worldIn.isClientSide) {
             val playerEntity = playerIn as ServerPlayerEntity
-            val stack = playerIn.getHeldItem(handIn)
-            if (playerEntity.isSneaking) {
-                playerEntity.openContainer(MobileDispenserGui(stack))
+            val stack = playerIn.getItemInHand(handIn)
+            if (playerEntity.isShiftKeyDown) {
+                playerEntity.openMenu(MobileDispenserGui(stack))
             } else {
-                val posVec = playerEntity.getEyePosition(1f).add(playerEntity.lookVec.mul(2.0, 2.0, 2.0))
+                val posVec = playerEntity.getEyePosition(1f).add(playerEntity.lookAngle.multiply(2.0, 2.0, 2.0))
                 val pos = BlockPos(posVec)
                 val cap = stack.getCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY)
                 if (cap.resolve().isPresent) {
@@ -49,7 +49,7 @@ class MobileDispenser(properties: Properties) : Item(properties) {
                         }
                     }
                     if (i < 0) {
-                        worldIn.playEvent(1001, pos, 0)
+                        worldIn.globalLevelEvent(1001, pos, 0)
                     } else {
                         val itemStack = handler.getStackInSlot(i)
                         val item = itemStack.item
@@ -61,12 +61,12 @@ class MobileDispenser(properties: Properties) : Item(properties) {
                                 ) as ProjectileEntity
                                 val projectileUncertainty = getProjectileInaccuracy.invoke(iDispenseItemBehavior) as Float
                                 val projectilePower = getProjectileVelocity.invoke(iDispenseItemBehavior) as Float
-                                val lookAngle = playerEntity.lookVec
+                                val lookAngle = playerEntity.lookAngle
                                 projectileEntity.shoot(
                                     lookAngle.x, (lookAngle.y.toFloat() + 0.1f).toDouble(), lookAngle.z, projectilePower, projectileUncertainty
                                 )
-                                projectileEntity.shooter = playerEntity
-                                worldIn.addEntity(projectileEntity)
+                                projectileEntity.owner = playerEntity
+                                worldIn.addFreshEntity(projectileEntity)
                                 itemStack.shrink(1)
                                 handler.setStackInSlot(i, itemStack)
                             } catch (e: IllegalAccessException) {
@@ -77,14 +77,14 @@ class MobileDispenser(properties: Properties) : Item(properties) {
                         } else {
                             if (item === Items.SPLASH_POTION || item === Items.LINGERING_POTION) {
                                 val projectileEntity: ProjectileEntity = Util.make(PotionEntity(worldIn, posVec.x, posVec.y, posVec.z), { potion: PotionEntity -> potion.item = itemStack })
-                                projectileEntity.shooter = playerEntity
+                                projectileEntity.owner = playerEntity
                                 val projectileUncertainty = (6.0 * 0.5).toFloat()
                                 val projectilePower = (1.1 * 1.25).toFloat()
-                                val lookAngle = playerEntity.lookVec
+                                val lookAngle = playerEntity.lookAngle
                                 projectileEntity.shoot(
                                     lookAngle.x, (lookAngle.y.toFloat() + 0.1f).toDouble(), lookAngle.z, projectilePower, projectileUncertainty
                                 )
-                                worldIn.addEntity(projectileEntity)
+                                worldIn.addFreshEntity(projectileEntity)
                                 itemStack.shrink(1)
                                 handler.setStackInSlot(i, itemStack)
                             }
@@ -93,7 +93,7 @@ class MobileDispenser(properties: Properties) : Item(properties) {
                 }
             }
         }
-        return super.onItemRightClick(worldIn, playerIn, handIn)
+        return super.use(worldIn, playerIn, handIn)
     }
 
     override fun initCapabilities(stack: ItemStack, nbt: CompoundNBT?): ItemInventoryCapabilityProvider {
@@ -109,15 +109,15 @@ class MobileDispenser(properties: Properties) : Item(properties) {
     }
 
     init {
-        DISPENSE_REGISTRY = DispenserBlock.DISPENSE_BEHAVIOR_REGISTRY
+        DISPENSE_REGISTRY = DispenserBlock.DISPENSER_REGISTRY
         getProjectileEntity = ObfuscationReflectionHelper.findMethod(
-            ProjectileDispenseBehavior::class.java, "getProjectileEntity", World::class.java, IPosition::class.java, ItemStack::class.java
+            ProjectileDispenseBehavior::class.java, "getProjectile", World::class.java, IPosition::class.java, ItemStack::class.java
         )
         getProjectileInaccuracy = ObfuscationReflectionHelper.findMethod(
-            ProjectileDispenseBehavior::class.java, "getProjectileInaccuracy"
+            ProjectileDispenseBehavior::class.java, "getUncertainty"
         )
         getProjectileVelocity = ObfuscationReflectionHelper.findMethod(
-            ProjectileDispenseBehavior::class.java, "getProjectileInaccuracy"
+            ProjectileDispenseBehavior::class.java, "getPower"
         )
     }
 }

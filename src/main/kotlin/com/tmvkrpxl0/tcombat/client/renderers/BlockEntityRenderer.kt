@@ -19,33 +19,33 @@ import javax.annotation.Nonnull
 
 class BlockEntityRenderer(renderManager: EntityRendererManager) : EntityRenderer<CustomizableBlockEntity>(renderManager) {
     init {
-        shadowSize = 0.5f
+        this.shadowRadius = 0.5f
     }
 
     override fun render(entityIn: CustomizableBlockEntity, entityYaw: Float, partialTicks: Float, @Nonnull matrixStackIn: MatrixStack, @Nonnull bufferIn: IRenderTypeBuffer, packedLightIn: Int) {
         val blockState = entityIn.getBlockState()
-        if (blockState.renderType == BlockRenderType.MODEL) {
-            val world = entityIn.entityWorld
-            matrixStackIn.push()
-            val blockPos = BlockPos(entityIn.posX, entityIn.boundingBox.maxY, entityIn.posZ)
+        if (blockState.renderShape == BlockRenderType.MODEL) {
+            val world = entityIn.level
+            matrixStackIn.pushPose()
+            val blockPos = BlockPos(entityIn.x, entityIn.boundingBox.maxY, entityIn.z)
             matrixStackIn.translate(-0.5, 0.0, -0.5)
-            val blockRendererDispatcher = Minecraft.getInstance().blockRendererDispatcher
-            for (type in RenderType.getBlockRenderTypes()) {
+            val blockRendererDispatcher = Minecraft.getInstance().blockRenderer
+            for (type in RenderType.chunkBufferLayers()) {
                 if (RenderTypeLookup.canRenderInLayer(blockState, type)) {
                     ForgeHooksClient.setRenderLayer(type)
-                    blockRendererDispatcher.blockModelRenderer.renderModel(
-                        world, blockRendererDispatcher.getModelForState(blockState), blockState, blockPos, matrixStackIn, bufferIn.getBuffer(type), false, Random(), 2340965, OverlayTexture.NO_OVERLAY
+                    blockRendererDispatcher.modelRenderer.tesselateBlock(
+                        world, blockRendererDispatcher.getBlockModel(blockState), blockState, blockPos, matrixStackIn, bufferIn.getBuffer(type), false, Random(), 2340965, OverlayTexture.NO_OVERLAY
                     )
                 }
             }
             ForgeHooksClient.setRenderLayer(null)
-            matrixStackIn.pop()
+            matrixStackIn.popPose()
             super.render(entityIn, entityYaw, partialTicks, matrixStackIn, bufferIn, packedLightIn)
         }
     }
 
     @Nonnull
-    override fun getEntityTexture(@Nonnull entity: CustomizableBlockEntity): ResourceLocation {
-        return AtlasTexture.LOCATION_BLOCKS_TEXTURE
+    override fun getTextureLocation(@Nonnull entity: CustomizableBlockEntity): ResourceLocation {
+        return AtlasTexture.LOCATION_BLOCKS
     }
 }
