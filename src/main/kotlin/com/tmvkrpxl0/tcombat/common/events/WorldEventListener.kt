@@ -50,8 +50,6 @@ object WorldEventListener {
                     }
                 }
             }
-
-            for(player: ServerPlayerEntity in ServerLifecycleHooks.getCurrentServer().playerList.players) TCombatUtil.updateTargets(player);
         }
     }
 

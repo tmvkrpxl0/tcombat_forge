@@ -14,7 +14,6 @@ interface ITargetHolder {
     fun clearTargets()
     fun getPickMode(): TargetCapability.PickMode
     fun setPickMode(mode: TargetCapability.PickMode)
-    fun update()
     fun getPlayer(): PlayerEntity
     fun setPlayer(player: PlayerEntity)
 }

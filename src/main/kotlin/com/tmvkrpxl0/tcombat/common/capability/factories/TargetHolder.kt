@@ -13,9 +13,17 @@ class TargetHolder : ITargetHolder{
     private var pickMode: TargetCapability.PickMode = TargetCapability.PickMode.LOOK
     private lateinit var player: PlayerEntity
 
-    override fun getTargets(): ImmutableList<LivingEntity> = ImmutableList.copyOf(this.targets)
+    override fun getTargets(): ImmutableList<LivingEntity>{
+        targets.removeIf { !it.isAlive || it.level != player.level || it.distanceToSqr(player) > 100 * 100 }
+        return ImmutableList.copyOf(this.targets)
+    }
 
-    override fun getFocused(): LivingEntity? = this.focused
+    override fun getFocused(): LivingEntity?{
+        if(this.focused?.isAlive != true || !this.targets.contains(this.focused)){
+            this.focused = null
+        }
+        return this.focused
+    }
 
     override fun setTargets(targets: List<LivingEntity>) {
         this.targets.clear()
@@ -36,10 +44,6 @@ class TargetHolder : ITargetHolder{
 
     override fun setPickMode(mode: TargetCapability.PickMode){
         this.pickMode = mode
-    }
-
-    override fun update() {
-        targets.removeIf { !it.isAlive || it.level != player.level || it.distanceToSqr(player) > 100 * 100 }
     }
 
     override fun getPlayer(): PlayerEntity = this.player
