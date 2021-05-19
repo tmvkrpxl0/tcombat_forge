@@ -1,7 +1,7 @@
 package com.tmvkrpxl0.tcombat.common.events
 
 import com.tmvkrpxl0.tcombat.TCombatMain
-import com.tmvkrpxl0.tcombat.common.capability.capabilities.ItemEntityConnectionCapability
+import com.tmvkrpxl0.tcombat.common.capability.capabilities.WorldAxeCapability
 import com.tmvkrpxl0.tcombat.common.capability.capabilities.TargetCapability
 import com.tmvkrpxl0.tcombat.common.skills.*
 import net.minecraft.util.ResourceLocation
@@ -26,7 +26,7 @@ object ModEventListener {
 
     @SubscribeEvent
     fun fmlCommonSetupEvent(event: FMLCommonSetupEvent){
-        ItemEntityConnectionCapability.register()
+        WorldAxeCapability.register()
         TargetCapability.register()
     }
 }

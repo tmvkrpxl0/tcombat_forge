@@ -2,6 +2,7 @@ package com.tmvkrpxl0.tcombat.client.renderers
 
 import com.mojang.blaze3d.matrix.MatrixStack
 import com.mojang.blaze3d.vertex.IVertexBuilder
+import com.tmvkrpxl0.tcombat.TCombatMain
 import com.tmvkrpxl0.tcombat.common.entities.projectile.WorldAxeEntity
 import com.tmvkrpxl0.tcombat.common.items.TCombatItems
 import net.minecraft.client.Minecraft
@@ -9,9 +10,11 @@ import net.minecraft.client.renderer.IRenderTypeBuffer
 import net.minecraft.client.renderer.RenderType
 import net.minecraft.client.renderer.entity.EntityRenderer
 import net.minecraft.client.renderer.entity.EntityRendererManager
+import net.minecraft.client.renderer.model.IBakedModel
 import net.minecraft.client.renderer.model.ItemCameraTransforms
 import net.minecraft.client.renderer.texture.AtlasTexture
 import net.minecraft.client.renderer.texture.OverlayTexture
+import net.minecraft.client.world.ClientWorld
 import net.minecraft.entity.player.PlayerEntity
 import net.minecraft.item.ItemStack
 import net.minecraft.util.HandSide
@@ -23,6 +26,9 @@ import net.minecraft.util.math.vector.Vector3f
 
 class WorldAxeRenderer(private val renderManager: EntityRendererManager) :
     EntityRenderer<WorldAxeEntity>(renderManager) {
+    companion object{
+        private val AXE = ResourceLocation(TCombatMain.MODID, "item/world_axe_axe")
+    }
     override fun getTextureLocation(entity: WorldAxeEntity): ResourceLocation = AtlasTexture.LOCATION_BLOCKS
 
     override fun render(
@@ -34,14 +40,13 @@ class WorldAxeRenderer(private val renderManager: EntityRendererManager) :
         packedLightIn: Int
     ) {
         matrixStack.pushPose()
-        val world = worldAxeEntity.level
-        val itemStack = worldAxeEntity.getBaseAxe()
+        val itemStack = worldAxeEntity.baseAxe
         val itemRenderer = Minecraft.getInstance().itemRenderer ///////////////////////Render axe start
         matrixStack.pushPose()
         matrixStack.mulPose(Vector3f.YP.rotationDegrees(180 - worldAxeEntity.yRot + 90))
         matrixStack.mulPose(Vector3f.ZP.rotationDegrees(worldAxeEntity.xRot - 20))
         matrixStack.scale(1.5f, 1.5f, 1.5f)
-        val iBakedModel = itemRenderer.getModel(itemStack, world, null)
+        val iBakedModel: IBakedModel = Minecraft.getInstance().modelManager.getModel(AXE)
         itemRenderer.render(
             itemStack,
             ItemCameraTransforms.TransformType.GROUND,
@@ -62,9 +67,9 @@ class WorldAxeRenderer(private val renderManager: EntityRendererManager) :
         matrixStack.mulPose(renderManager.cameraOrientation())
         matrixStack.mulPose(Vector3f.YP.rotationDegrees(180.0f))
         matrixStack.popPose()
-        var lvt_12_1_ = if(playerentity.mainArm == HandSide.RIGHT) 1 else -1
+        var lvt_12_1_ = if (playerentity.mainArm == HandSide.RIGHT) 1 else -1
         val itemstack: ItemStack = playerentity.mainHandItem
-        if(itemstack.item !== TCombatItems.WORLD_AXE.get()) {
+        if (itemstack.item !== TCombatItems.WORLD_AXE.get()) {
             lvt_12_1_ = -lvt_12_1_
         }
         val lvt_14_1_: Float = playerentity.getAttackAnim(partialTicks)
@@ -79,7 +84,7 @@ class WorldAxeRenderer(private val renderManager: EntityRendererManager) :
         val lvt_29_2_: Double
         val lvt_31_2_: Float
         var lvt_32_2_: Double
-        if((entityRenderDispatcher.options == null || entityRenderDispatcher.options.cameraType.isFirstPerson) && playerentity === Minecraft.getInstance().player) {
+        if ((entityRenderDispatcher.options == null || entityRenderDispatcher.options.cameraType.isFirstPerson) && playerentity === Minecraft.getInstance().player) {
             lvt_32_2_ = entityRenderDispatcher.options.fov
             lvt_32_2_ /= 100.0
             var lvt_34_1_ = Vector3d(lvt_12_1_.toDouble() * -0.36 * lvt_32_2_, -0.045 * lvt_32_2_, 0.4)
@@ -108,7 +113,7 @@ class WorldAxeRenderer(private val renderManager: EntityRendererManager) :
             lvt_29_2_ = MathHelper.lerp(
                 partialTicks.toDouble(), playerentity.zo, playerentity.z
             ) - lvt_17_1_ * lvt_21_1_ + lvt_19_1_ * 0.8
-            lvt_31_2_ = if(playerentity.isCrouching) -0.1875f else 0.0f
+            lvt_31_2_ = if (playerentity.isCrouching) -0.1875f else 0.0f
         }
 
         lvt_32_2_ = MathHelper.lerp(partialTicks.toDouble(), worldAxeEntity.xo, worldAxeEntity.x)
@@ -119,9 +124,9 @@ class WorldAxeRenderer(private val renderManager: EntityRendererManager) :
         val lvt_40_1_ = (lvt_29_2_ - lvt_36_1_).toFloat()
         val lvt_41_1_: IVertexBuilder = bufferIn.getBuffer(RenderType.lines())
         val lvt_42_1_: Matrix4f = matrixStack.last().pose()
-        val lvt_43_1_: Int = 1
+        val lvt_43_1_ = 1
 
-        for(lvt_44_1_ in 0..15) {
+        for (lvt_44_1_ in 0..15) {
             stringVertex(
                 lvt_38_1_, lvt_39_1_, lvt_40_1_, lvt_41_1_, lvt_42_1_, fraction(lvt_44_1_, 16)
             )

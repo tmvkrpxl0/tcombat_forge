@@ -1,6 +1,15 @@
 {
   "parent": "minecraft:item/handheld",
   "textures":{
-    "layer0": "tcombat:item/world_axe"
-  }
+    "layer0": "tcombat:item/world_axe_rod",
+    "layer1": "tcombat:item/world_axe_axe"
+  },
+  "overrides": [
+    {
+      "predicate": {
+        "cast": 1
+      },
+      "model": "tcombat:item/world_axe_cast"
+    }
+  ]
 }

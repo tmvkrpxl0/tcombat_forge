@@ -13,7 +13,7 @@ object TargetCapability: IHasCapability {
     lateinit var TARGET_HANDLER: Capability<ITargetHolder>
 
     override fun register(){
-        CapabilityManager.INSTANCE.register(ITargetHolder::class.java, TargetHandler()){TargetHolder()}
+        CapabilityManager.INSTANCE.register(ITargetHolder::class.java, TargetHandler()){ TargetHolder() }
     }
 
     enum class RequestType{

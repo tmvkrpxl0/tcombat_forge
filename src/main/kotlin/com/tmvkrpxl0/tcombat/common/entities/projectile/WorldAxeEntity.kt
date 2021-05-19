@@ -1,10 +1,11 @@
 package com.tmvkrpxl0.tcombat.common.entities.projectile
 
-import com.tmvkrpxl0.tcombat.common.capability.capabilities.ItemEntityConnectionCapability
-import com.tmvkrpxl0.tcombat.common.capability.factories.EntityHolder
+import com.tmvkrpxl0.tcombat.common.capability.capabilities.WorldAxeCapability
+import com.tmvkrpxl0.tcombat.common.capability.factories.IAxeConnector
 import com.tmvkrpxl0.tcombat.common.entities.TCombatEntityTypes
 import com.tmvkrpxl0.tcombat.common.items.TCombatItems
 import net.minecraft.block.BlockState
+import net.minecraft.client.entity.player.ClientPlayerEntity
 import net.minecraft.entity.Entity
 import net.minecraft.entity.EntityType
 import net.minecraft.entity.player.PlayerEntity
@@ -14,12 +15,8 @@ import net.minecraft.item.ItemStack
 import net.minecraft.nbt.CompoundNBT
 import net.minecraft.network.IPacket
 import net.minecraft.network.PacketBuffer
-import net.minecraft.network.datasync.DataParameter
-import net.minecraft.network.datasync.DataSerializers
-import net.minecraft.network.datasync.EntityDataManager
 import net.minecraft.particles.BlockParticleData
 import net.minecraft.particles.ParticleTypes
-import net.minecraft.util.SoundEvents
 import net.minecraft.util.math.*
 import net.minecraft.util.math.vector.Vector3d
 import net.minecraft.world.World
@@ -30,62 +27,55 @@ import net.minecraftforge.fml.server.ServerLifecycleHooks
 
 class WorldAxeEntity : ProjectileEntity, IEntityAdditionalSpawnData {
     var inGround = false
-    var lastState: BlockState? = null
-    companion object {
-        val BASE_AXE: DataParameter<ItemStack> = EntityDataManager.defineId(WorldAxeEntity::class.java, DataSerializers.ITEM_STACK)
-    }
+    private var lastState: BlockState? = null
+    lateinit var baseAxe: ItemStack
 
     constructor(entityType: EntityType<WorldAxeEntity>, world: World) : super(entityType, world)
 
     constructor(player: PlayerEntity, baseItem:ItemStack):this(TCombatEntityTypes.WORLD_AXE.get(), player.level){
         this.owner = player
-        this.setBaseAxe(baseItem)
+        this.baseAxe = baseItem
         this.absMoveTo(player.x, player.eyeY, player.z, player.yRot, player.xRot)
-        this.setNoGravity(false)
-    }
-
-    override fun defineSynchedData() {
-        this.entityData.define(BASE_AXE, ItemStack(TCombatItems.WORLD_AXE.get()))
+        this.isNoGravity = false
     }
 
     override fun readAdditionalSaveData(compound: CompoundNBT) {
-        this.setBaseAxe(ItemStack.of(compound.getCompound("BaseAxe")))
+        this.baseAxe = ItemStack.of(compound.getCompound("BaseAxe"))
         this.inGround = compound.getBoolean("inGround")
         super.readAdditionalSaveData(compound)
     }
 
     override fun addAdditionalSaveData(compound: CompoundNBT) {
         val c = CompoundNBT()
-        compound.put("BaseAxe", this.getBaseAxe().save(c))
+        compound.put("BaseAxe", this.baseAxe.save(c))
         compound.putBoolean("inGround", this.inGround)
         super.addAdditionalSaveData(compound)
     }
 
-    fun setBaseAxe(baseItem: ItemStack) = this.entityData.set(BASE_AXE, baseItem)
-
-    fun getBaseAxe(): ItemStack = this.entityData.get(BASE_AXE)
-
     override fun getAddEntityPacket(): IPacket<*> = NetworkHooks.getEntitySpawningPacket(this)
 
+    override fun defineSynchedData() {
+
+    }
+
     override fun remove() {
-        val cap = this.getBaseAxe().getCapability(ItemEntityConnectionCapability.ITEM_ENTITY_CONNECTION_HANDLER)
+        val cap = this.baseAxe.getCapability(WorldAxeCapability.itemEntityConnectionHandler)
         if(cap.resolve().isPresent){
-            val entityHolder = cap.resolve().get() as EntityHolder
+            val entityHolder = cap.resolve().get()
             entityHolder.setEntity(null)
         }
         super.remove()
     }
 
     override fun tick() {
-        if(this.owner == null || !this.owner!!.isAlive || shouldRemove(this.owner as PlayerEntity)){
+        if(this.owner == null || !this.owner!!.isAlive || this.shouldRemove(this.owner as PlayerEntity)){
             this.remove()
         }
         var vector3d = this.deltaMovement
         if(xRotO == 0.0f && yRotO == 0.0f) {
             val f = MathHelper.sqrt(getHorizontalDistanceSqr(vector3d))
             yRot = (MathHelper.atan2(vector3d.x, vector3d.z) * (180f / Math.PI.toFloat()).toDouble()).toFloat()
-            xRot =
-                (MathHelper.atan2(vector3d.y, f.toDouble()) * (180f / Math.PI.toFloat()).toDouble()).toFloat()
+            xRot = (MathHelper.atan2(vector3d.y, f.toDouble()) * (180f / Math.PI.toFloat()).toDouble()).toFloat()
             yRotO = yRot
             xRotO = xRot
         }
@@ -119,7 +109,7 @@ class WorldAxeEntity : ProjectileEntity, IEntityAdditionalSpawnData {
             if(raytraceresult!!.type != RayTraceResult.Type.MISS) {
                 vector3d3 = raytraceresult.location
             }
-            while(!removed) {
+            while(this.isAlive) {
                 var entityraytraceresult = findHitEntity(vector3d2, vector3d3)
                 if(entityraytraceresult != null) {
                     raytraceresult = entityraytraceresult
@@ -156,7 +146,7 @@ class WorldAxeEntity : ProjectileEntity, IEntityAdditionalSpawnData {
                 f2 = getWaterInertia()
             }
             this.deltaMovement = vector3d.scale(f2.toDouble())
-            if(!isNoGravity()) {
+            if(!isNoGravity) {
                 val vector3d4 = this.deltaMovement
                 this.setDeltaMovement(vector3d4.x, vector3d4.y - 0.05, vector3d4.z)
             }
@@ -208,11 +198,19 @@ class WorldAxeEntity : ProjectileEntity, IEntityAdditionalSpawnData {
     }
 
     override fun writeSpawnData(buffer: PacketBuffer) {
-        if(this.owner!=null)buffer.writeUUID(this.owner!!.uuid)
+        buffer.writeVarInt(this.owner!!.id)
+        buffer.writeItem(this.baseAxe)
     }
 
     override fun readSpawnData(additionalData: PacketBuffer) {
-        this.owner = ServerLifecycleHooks.getCurrentServer().playerList.getPlayer(additionalData.readUUID())
+        val player = this.level.getEntity(additionalData.readVarInt()) as ClientPlayerEntity
+        this.owner = player
+        var item = player.mainHandItem
+        val compare = additionalData.readItem()
+        if(!item.sameItem(compare))item = player.offhandItem
+        this.baseAxe = item
+        val cap = item.getCapability(WorldAxeCapability.itemEntityConnectionHandler)
+        cap.resolve().get().setEntity(this)
     }
 
     fun shouldRemove(player: PlayerEntity): Boolean {
