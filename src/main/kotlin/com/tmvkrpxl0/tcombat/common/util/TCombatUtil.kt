@@ -144,8 +144,6 @@ object TCombatUtil {
     @Nonnull
     fun setFocus(@Nonnull player: PlayerEntity, focused: LivingEntity?) = this.getTargetHolder(player).setFocused(focused)
 
-    fun updateTargets(@Nonnull player: PlayerEntity) = this.getTargetHolder(player).update()
-
     fun requestCB(player: ServerPlayerEntity, blockState: BlockState, consumer: TriConsumer<UUID, Float, Float>){
         val uuid = UUID.randomUUID()
         cbRequests[uuid] = consumer
