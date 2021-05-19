@@ -2,7 +2,6 @@ package com.tmvkrpxl0.tcombat.common.entities.misc
 
 import com.tmvkrpxl0.tcombat.common.entities.TCombatEntityTypes
 import com.tmvkrpxl0.tcombat.common.util.TCombatDataSerializers
-import com.tmvkrpxl0.tcombat.common.util.TCombatUtil
 import com.tmvkrpxl0.tcombat.common.util.VanilaCopy
 import net.minecraft.entity.Entity
 import net.minecraft.entity.EntityType
@@ -18,7 +17,6 @@ import net.minecraft.particles.ParticleTypes
 import net.minecraft.util.SoundCategory
 import net.minecraft.util.SoundEvents
 import net.minecraft.world.World
-import net.minecraftforge.fml.common.registry.IEntityAdditionalSpawnData
 import net.minecraftforge.fml.network.NetworkHooks
 import java.util.*
 
