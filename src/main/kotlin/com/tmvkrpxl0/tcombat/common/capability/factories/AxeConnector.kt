@@ -1,6 +1,8 @@
 package com.tmvkrpxl0.tcombat.common.capability.factories
 
 import com.tmvkrpxl0.tcombat.common.entities.projectile.WorldAxeEntity
+import com.tmvkrpxl0.tcombat.common.events.WorldEventListener
+import com.tmvkrpxl0.tcombat.common.util.ForgeRunnable
 import net.minecraft.entity.player.PlayerEntity
 import net.minecraft.item.ItemStack
 
@@ -8,7 +10,7 @@ class AxeConnector: IAxeConnector {
     private var entity: WorldAxeEntity? = null
     private lateinit var item: ItemStack
     private var player: PlayerEntity? = null
-    private var pulling: Boolean = false
+    private var puller: ForgeRunnable? = null
 
     override fun getEntity(): WorldAxeEntity?{
         if(this.entity != null && !this.entity!!.isAlive)this.entity = null
@@ -31,9 +33,21 @@ class AxeConnector: IAxeConnector {
         this.player = player
     }
 
-    override fun setPulling(pulling: Boolean){
-        this.pulling = pulling
+    override fun getPuller(): ForgeRunnable?{
+        if(this.puller!=null && this.puller!!.isCancelled())this.puller = null
+        return this.puller
     }
 
-    override fun isPulling(): Boolean = this.pulling
+    override fun setPuller(puller: ForgeRunnable?) {
+        this.puller?.setCancelled(true)
+        this.puller = puller
+    }
+
+    override fun pull(){
+        if(this.puller==null)return
+        if(this.player==null)return
+        if(this.player!!.level.isClientSide)return
+        if(this.getEntity()==null)return
+        WorldEventListener.tasks.add(this.puller!!)
+    }
 }

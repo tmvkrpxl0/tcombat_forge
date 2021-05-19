@@ -7,6 +7,7 @@ import net.minecraft.block.BlockState
 import net.minecraft.client.entity.player.ClientPlayerEntity
 import net.minecraft.entity.Entity
 import net.minecraft.entity.EntityType
+import net.minecraft.entity.LivingEntity
 import net.minecraft.entity.player.PlayerEntity
 import net.minecraft.entity.projectile.ProjectileEntity
 import net.minecraft.entity.projectile.ProjectileHelper
@@ -14,6 +15,9 @@ import net.minecraft.item.ItemStack
 import net.minecraft.nbt.CompoundNBT
 import net.minecraft.network.IPacket
 import net.minecraft.network.PacketBuffer
+import net.minecraft.network.datasync.DataParameter
+import net.minecraft.network.datasync.DataSerializers
+import net.minecraft.network.datasync.EntityDataManager
 import net.minecraft.particles.BlockParticleData
 import net.minecraft.particles.ParticleTypes
 import net.minecraft.util.math.*
@@ -24,9 +28,13 @@ import net.minecraftforge.fml.common.registry.IEntityAdditionalSpawnData
 import net.minecraftforge.fml.network.NetworkHooks
 
 class WorldAxeEntity : ProjectileEntity, IEntityAdditionalSpawnData {
+    companion object{
+        val HOOKED: DataParameter<Int> = EntityDataManager.defineId(WorldAxeEntity::class.java, DataSerializers.INT)
+    }
     var inGround = false
     private var lastState: BlockState? = null
     lateinit var baseAxe: ItemStack
+    private var hooked: LivingEntity? = null
 
     constructor(entityType: EntityType<WorldAxeEntity>, world: World) : super(entityType, world)
 
@@ -53,7 +61,7 @@ class WorldAxeEntity : ProjectileEntity, IEntityAdditionalSpawnData {
     override fun getAddEntityPacket(): IPacket<*> = NetworkHooks.getEntitySpawningPacket(this)
 
     override fun defineSynchedData() {
-
+        this.entityData.define(HOOKED, 0)
     }
 
     override fun remove() {
@@ -68,6 +76,10 @@ class WorldAxeEntity : ProjectileEntity, IEntityAdditionalSpawnData {
     override fun tick() {
         if(this.owner == null || !this.owner!!.isAlive || this.shouldRemove(this.owner as PlayerEntity)){
             this.remove()
+        }
+        if(this.hooked?.isAlive != true){
+            this.hooked = null
+            this.entityData.set(HOOKED, 0)
         }
         var vector3d = this.deltaMovement
         if(xRotO == 0.0f && yRotO == 0.0f) {
@@ -98,37 +110,7 @@ class WorldAxeEntity : ProjectileEntity, IEntityAdditionalSpawnData {
             if(lastState !== blockstate && this.shouldFall()) {
                 this.fall()
             }
-        } else {
-            val vector3d2 = this.position()
-            var vector3d3 = vector3d2.add(vector3d)
-            var raytraceresult: RayTraceResult? = this.level.clip(
-                RayTraceContext(vector3d2, vector3d3, RayTraceContext.BlockMode.COLLIDER, RayTraceContext.FluidMode.NONE, this)
-            )
-            if(raytraceresult!!.type != RayTraceResult.Type.MISS) {
-                vector3d3 = raytraceresult.location
-            }
-            while(this.isAlive) {
-                var entityraytraceresult = findHitEntity(vector3d2, vector3d3)
-                if(entityraytraceresult != null) {
-                    raytraceresult = entityraytraceresult
-                }
-                if(raytraceresult != null && raytraceresult.type == RayTraceResult.Type.ENTITY) {
-                    val entity = (raytraceresult as EntityRayTraceResult).entity
-                    val entity1 = this.owner
-                    if(entity is PlayerEntity && entity1 is PlayerEntity && !entity1.canHarmPlayer(entity)) {
-                        raytraceresult = null
-                        entityraytraceresult = null
-                    }
-                }
-                if(raytraceresult != null && raytraceresult.type != RayTraceResult.Type.MISS && !ForgeEventFactory.onProjectileImpact(this, raytraceresult)) {
-                    this.onHit(raytraceresult)
-                    this.hasImpulse = true
-                }
-                if(entityraytraceresult == null) {
-                    break
-                }
-                raytraceresult = null
-            }
+        } else if(this.hooked == null){
             vector3d = this.deltaMovement
             val d3 = vector3d.x
             val d4 = vector3d.y
@@ -150,6 +132,9 @@ class WorldAxeEntity : ProjectileEntity, IEntityAdditionalSpawnData {
             }
             this.setPos(d5, d1, d2)
            this.checkInsideBlocks()
+        }else{
+            val h = this.hooked!!
+            this.setPos(h.x, h.getY(0.8), h.z)
         }
         super.tick()
     }
@@ -168,14 +153,22 @@ class WorldAxeEntity : ProjectileEntity, IEntityAdditionalSpawnData {
         )
     }
 
-    fun findHitEntity(startVec: Vector3d, endVec: Vector3d): EntityRayTraceResult? {
-        return ProjectileHelper.getEntityHitResult(this.level, this, startVec, endVec, boundingBox.expandTowards(this.deltaMovement).inflate(1.0)) { entityIn: Entity ->
-            canHitEntity(entityIn)
+    fun getWaterInertia(): Float {
+        return 0.6f
+    }
+
+    override fun onHitEntity(result: EntityRayTraceResult) {
+        super.onHitEntity(result)
+        if (!this.level.isClientSide) {
+            if(result.entity is LivingEntity){
+                this.hooked = result.entity as LivingEntity
+                this.setHookedEntity()
+            }
         }
     }
 
-    fun getWaterInertia(): Float {
-        return 0.6f
+    private fun setHookedEntity() {
+        this.entityData.set(HOOKED, this.hooked!!.id)
     }
 
     override fun onHitBlock(result: BlockRayTraceResult) {
