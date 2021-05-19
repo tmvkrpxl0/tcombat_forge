@@ -20,7 +20,7 @@ object TCombatMain {
 
     init { // Register ourselves for server and other game events we are interested in
         MinecraftForge.EVENT_BUS.register(this)
-        TCombatPacketHandler.registerPackets()
+        TCombatPacketHandler.register()
         val bus = MOD_BUS
         TCombatEntityTypes.ENTITIES.register(bus)
         TCombatItems.ITEMS.register(bus)

@@ -6,6 +6,7 @@ import com.tmvkrpxl0.tcombat.common.util.TCombatUtil
 import net.minecraft.block.BlockState
 import net.minecraft.block.Blocks
 import net.minecraft.entity.Entity
+import net.minecraft.entity.EntitySize
 import net.minecraft.entity.EntityType
 import net.minecraft.entity.item.FallingBlockEntity
 import net.minecraft.entity.player.PlayerEntity
@@ -31,11 +32,15 @@ class CustomizableBlockEntity : Entity, ICustomizableEntity{
 
     constructor(type: EntityType<out CustomizableBlockEntity>, world: World) : super(type, world)
 
-    constructor(x: Double, y: Double, z: Double, blockState: BlockState, player: PlayerEntity, isSolid: Boolean) : this(TCombatEntityTypes.CUSTOMIZABLE_BLOCK_ENTITY.get(), player.level) {
+    constructor(x: Double, y: Double, z: Double, blockState: BlockState, player: PlayerEntity, isSolid: Boolean, uuid: UUID, width: Float, height: Float) : this(TCombatEntityTypes.CUSTOMIZABLE_BLOCK_ENTITY.get(), player.level) {
+        if(!this.level.isClientSide){
+            if(!TCombatUtil.isRequested(uuid))this.remove()
+        }
         this.setPos(x, y, z)
         this.setBlockState(blockState)
         owner = player.uuid
         this.setSolid(isSolid)
+        this.dimensions = EntitySize.scalable(width, height)
     }
 
     override fun defineSynchedData() {
@@ -97,9 +102,12 @@ class CustomizableBlockEntity : Entity, ICustomizableEntity{
 
     override fun writeSpawnData(buffer: PacketBuffer) {
         buffer.writeUUID(owner)
+        buffer.writeFloat(this.dimensions.width)
+        buffer.writeFloat(this.dimensions.height)
     }
 
     override fun readSpawnData(additionalData: PacketBuffer) {
         this.owner = additionalData.readUUID()
+        this.dimensions = EntitySize.scalable(additionalData.readFloat(), additionalData.readFloat())
     }
 }
