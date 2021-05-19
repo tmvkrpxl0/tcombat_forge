@@ -15,4 +15,17 @@ object TargetCapability: IHasCapability {
     override fun register(){
         CapabilityManager.INSTANCE.register(ITargetHolder::class.java, TargetHandler()){TargetHolder()}
     }
+
+    enum class RequestType{
+        SET,
+        UNSET,
+        PICK_FOCUS,
+        NEXT_PICK_MODE
+    }
+
+    enum class PickMode{
+        LOOK,
+        CLOSE,
+        RANDOM
+    }
 }
