@@ -20,7 +20,7 @@ object ModEventListener {
         builder.setName(ResourceLocation(TCombatMain.MODID, "skill_registry"))
         builder.type = AbstractSkill::class.java
         val registry = builder.create()
-        registry.registerAll(ArrowSense, RicochetArrow, AutoBridge, ReflectionBlast)
+        registry.registerAll(ArrowSense, RicochetArrow, AutoBridge, ReflectionBlast, TestSkill)
         TCombatMain.LOGGER.info("Registry Created!")
     }
 
