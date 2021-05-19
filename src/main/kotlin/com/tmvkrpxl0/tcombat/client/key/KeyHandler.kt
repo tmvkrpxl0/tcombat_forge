@@ -1,28 +1,20 @@
 package com.tmvkrpxl0.tcombat.client.key
 
-import com.tmvkrpxl0.tcombat.TCombatMain
 import com.tmvkrpxl0.tcombat.common.capability.capabilities.TargetCapability
-import com.tmvkrpxl0.tcombat.common.network.packets.CBSizeRequestPacket
 import com.tmvkrpxl0.tcombat.common.network.packets.SkillRequestPacket
 import com.tmvkrpxl0.tcombat.common.network.packets.TCombatPacketHandler
 import com.tmvkrpxl0.tcombat.common.network.packets.TargetRequestPacket
 import com.tmvkrpxl0.tcombat.common.skills.ReflectionBlast
 import com.tmvkrpxl0.tcombat.common.skills.RicochetArrow
 import com.tmvkrpxl0.tcombat.common.skills.TestSkill
-import com.tmvkrpxl0.tcombat.common.util.TCombatUtil
-import net.minecraft.block.Blocks
 import net.minecraft.client.Minecraft
-import net.minecraft.client.renderer.vertex.DefaultVertexFormats
 import net.minecraft.client.settings.KeyBinding
 import net.minecraft.client.util.InputMappings
 import net.minecraftforge.client.event.InputEvent.KeyInputEvent
-import net.minecraftforge.client.model.pipeline.LightUtil
 import net.minecraftforge.client.settings.KeyConflictContext
 import net.minecraftforge.common.MinecraftForge
 import net.minecraftforge.fml.client.registry.ClientRegistry
 import org.lwjgl.glfw.GLFW
-import kotlin.math.max
-import kotlin.math.min
 
 class KeyHandler private constructor(): AbstractKeyHandler(BINDINGS) {
     companion object {

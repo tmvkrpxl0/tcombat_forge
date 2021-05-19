@@ -6,10 +6,7 @@ import com.tmvkrpxl0.tcombat.client.renderers.*
 import com.tmvkrpxl0.tcombat.common.capability.capabilities.WorldAxeCapability
 import com.tmvkrpxl0.tcombat.common.entities.TCombatEntityTypes
 import com.tmvkrpxl0.tcombat.common.items.TCombatItems
-import com.tmvkrpxl0.tcombat.common.items.weapon.WorldAxeItem
-import net.minecraft.client.Minecraft
 import net.minecraft.client.renderer.entity.EntityRendererManager
-import net.minecraft.item.IItemPropertyGetter
 import net.minecraft.item.ItemModelsProperties
 import net.minecraft.util.ResourceLocation
 import net.minecraftforge.api.distmarker.Dist

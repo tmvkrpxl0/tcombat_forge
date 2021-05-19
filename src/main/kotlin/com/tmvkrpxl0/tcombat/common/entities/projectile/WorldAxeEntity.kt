@@ -1,7 +1,6 @@
 package com.tmvkrpxl0.tcombat.common.entities.projectile
 
 import com.tmvkrpxl0.tcombat.common.capability.capabilities.WorldAxeCapability
-import com.tmvkrpxl0.tcombat.common.capability.factories.IAxeConnector
 import com.tmvkrpxl0.tcombat.common.entities.TCombatEntityTypes
 import com.tmvkrpxl0.tcombat.common.items.TCombatItems
 import net.minecraft.block.BlockState
@@ -23,7 +22,6 @@ import net.minecraft.world.World
 import net.minecraftforge.event.ForgeEventFactory
 import net.minecraftforge.fml.common.registry.IEntityAdditionalSpawnData
 import net.minecraftforge.fml.network.NetworkHooks
-import net.minecraftforge.fml.server.ServerLifecycleHooks
 
 class WorldAxeEntity : ProjectileEntity, IEntityAdditionalSpawnData {
     var inGround = false

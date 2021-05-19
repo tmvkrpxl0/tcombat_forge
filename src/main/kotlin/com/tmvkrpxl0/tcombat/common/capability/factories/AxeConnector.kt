@@ -8,6 +8,7 @@ class AxeConnector: IAxeConnector {
     private var entity: WorldAxeEntity? = null
     private lateinit var item: ItemStack
     private var player: PlayerEntity? = null
+    private var pulling: Boolean = false
 
     override fun getEntity(): WorldAxeEntity?{
         if(this.entity != null && !this.entity!!.isAlive)this.entity = null
@@ -29,4 +30,10 @@ class AxeConnector: IAxeConnector {
     override fun setPlayer(player: PlayerEntity) {
         this.player = player
     }
+
+    override fun setPulling(pulling: Boolean){
+        this.pulling = pulling
+    }
+
+    override fun isPulling(): Boolean = this.pulling
 }

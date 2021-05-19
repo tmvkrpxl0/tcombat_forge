@@ -6,10 +6,8 @@ import com.tmvkrpxl0.tcombat.common.items.projectile.ReflectiveArrowItem
 import com.tmvkrpxl0.tcombat.common.items.projectile.SnipeArrowItem
 import com.tmvkrpxl0.tcombat.common.items.projectile.TNTArrowItem
 import com.tmvkrpxl0.tcombat.common.items.weapon.WorldAxeItem
-import net.minecraft.item.AxeItem
 import net.minecraft.item.Item
 import net.minecraft.item.ItemGroup
-import net.minecraft.item.ItemTier
 import net.minecraftforge.fml.RegistryObject
 import net.minecraftforge.registries.DeferredRegister
 import net.minecraftforge.registries.ForgeRegistries

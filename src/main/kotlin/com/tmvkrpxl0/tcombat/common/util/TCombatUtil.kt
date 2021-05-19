@@ -20,7 +20,6 @@ import net.minecraftforge.fml.common.thread.SidedThreadGroups
 import net.minecraftforge.fml.network.PacketDistributor
 import org.apache.logging.log4j.util.TriConsumer
 import java.util.*
-import java.util.function.BiConsumer
 import javax.annotation.Nonnull
 import kotlin.math.absoluteValue
 import kotlin.math.acos

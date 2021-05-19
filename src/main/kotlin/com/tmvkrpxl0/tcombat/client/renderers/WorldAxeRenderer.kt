@@ -14,7 +14,6 @@ import net.minecraft.client.renderer.model.IBakedModel
 import net.minecraft.client.renderer.model.ItemCameraTransforms
 import net.minecraft.client.renderer.texture.AtlasTexture
 import net.minecraft.client.renderer.texture.OverlayTexture
-import net.minecraft.client.world.ClientWorld
 import net.minecraft.entity.player.PlayerEntity
 import net.minecraft.item.ItemStack
 import net.minecraft.util.HandSide

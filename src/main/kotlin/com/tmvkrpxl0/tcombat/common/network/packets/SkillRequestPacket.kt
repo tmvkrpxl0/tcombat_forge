@@ -5,7 +5,6 @@ import net.minecraft.entity.player.PlayerEntity
 import net.minecraft.network.PacketBuffer
 import net.minecraftforge.fml.network.NetworkEvent
 import java.util.function.Supplier
-import javax.annotation.Nonnull
 
 class SkillRequestPacket(val skill: AbstractActiveSkill): ITCombatPacket {
 

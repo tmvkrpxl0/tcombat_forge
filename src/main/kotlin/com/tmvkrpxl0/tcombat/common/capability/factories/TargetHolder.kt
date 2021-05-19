@@ -2,7 +2,6 @@ package com.tmvkrpxl0.tcombat.common.capability.factories
 
 import com.google.common.collect.ImmutableList
 import com.tmvkrpxl0.tcombat.common.capability.capabilities.TargetCapability
-import com.tmvkrpxl0.tcombat.common.network.packets.TargetRequestPacket
 import net.minecraft.entity.LivingEntity
 import net.minecraft.entity.player.PlayerEntity
 import java.util.*

@@ -1,14 +1,11 @@
 package com.tmvkrpxl0.tcombat.common.events
 
 import com.tmvkrpxl0.tcombat.TCombatMain
-import com.tmvkrpxl0.tcombat.common.entities.misc.CustomizableBlockEntity
 import com.tmvkrpxl0.tcombat.common.entities.misc.ICustomizableEntity
-import com.tmvkrpxl0.tcombat.common.util.TCombatUtil
 import com.tmvkrpxl0.tcombat.common.util.VanilaCopy
 import net.minecraft.enchantment.EnchantmentHelper
 import net.minecraft.enchantment.Enchantments
 import net.minecraft.entity.LivingEntity
-import net.minecraft.entity.player.ServerPlayerEntity
 import net.minecraft.entity.projectile.ArrowEntity
 import net.minecraft.world.server.ServerWorld
 import net.minecraftforge.api.distmarker.Dist
