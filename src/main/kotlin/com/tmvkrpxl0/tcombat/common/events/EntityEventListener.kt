@@ -9,6 +9,7 @@ import com.tmvkrpxl0.tcombat.common.entities.misc.CustomizableFluidEntity
 import com.tmvkrpxl0.tcombat.common.entities.misc.ICustomizableEntity
 import com.tmvkrpxl0.tcombat.common.entities.projectile.WorldAxeEntity
 import com.tmvkrpxl0.tcombat.common.util.VanilaCopy
+import net.minecraft.client.Minecraft
 import net.minecraft.enchantment.EnchantmentHelper
 import net.minecraft.enchantment.Enchantments
 import net.minecraft.entity.Entity
@@ -77,7 +78,16 @@ object EntityEventListener {
 
     @SubscribeEvent
     fun attachCapability(event: AttachCapabilitiesEvent<Entity>){
-        event.addCapability(TARGET_HOLDER, TargetCapabilityProvider())
+        if(event.`object` is PlayerEntity){
+            val player = event.`object` as PlayerEntity
+            if(player.level.isClientSide){
+                if(player == Minecraft.getInstance().player){//Client should only have Target Holder of the player
+                    event.addCapability(TARGET_HOLDER, TargetCapabilityProvider(player))
+                }
+            }else{//Server should have Target Holder for all player
+                event.addCapability(TARGET_HOLDER, TargetCapabilityProvider(player))
+            }
+        }
     }
 
     @SubscribeEvent
@@ -168,10 +178,10 @@ object EntityEventListener {
                         if (stack.item === Items.CROSSBOW) {
                             val enchants = EnchantmentHelper.getEnchantments(stack)
                             if (enchants.containsKey(TCombatEnchants.FOCUS.get())) {
-                                EntityEventListener.instaArrows.add(arrowEntity)
+                                instaArrows.add(arrowEntity)
                                 if (enchants.containsKey(Enchantments.MULTISHOT)) {
                                     if (!WorldEventListener.multiShotTracker.containsKey(shooter)) {
-                                        WorldEventListener.multiShotTracker[shooter] = EntityEventListener.ArrowCounter()
+                                        WorldEventListener.multiShotTracker[shooter] = ArrowCounter()
                                     }
                                     val counter = WorldEventListener.multiShotTracker[shooter]
                                     if (counter!!.count == 3) return
