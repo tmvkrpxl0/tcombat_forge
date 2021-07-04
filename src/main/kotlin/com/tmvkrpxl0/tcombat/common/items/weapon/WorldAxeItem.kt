@@ -4,6 +4,8 @@ import com.tmvkrpxl0.tcombat.common.capability.capabilities.WorldAxeCapability
 import com.tmvkrpxl0.tcombat.common.capability.providers.ItemEntityConnectionProvider
 import com.tmvkrpxl0.tcombat.common.entities.projectile.WorldAxeEntity
 import com.tmvkrpxl0.tcombat.common.util.ForgeRunnable
+import net.minecraft.entity.Entity
+import net.minecraft.entity.LivingEntity
 import net.minecraft.entity.player.PlayerEntity
 import net.minecraft.item.AxeItem
 import net.minecraft.item.ItemStack
@@ -33,28 +35,34 @@ class WorldAxeItem(properties:Properties): AxeItem(ItemTier.NETHERITE, 5.0f, -3.
                         worldAxeEntity.hurtMarked = true
                     }
                 }else{
-                    val entity = axeConnector.getEntity()!!
-                    if(entity.inGround){
+                    if(axeConnector.getEntity()!!.inGround || axeConnector.getEntity()!!.hooked != null){
                         if(axeConnector.getPuller()==null){
+                            val shift = player.isShiftKeyDown
+                            var destination = axeConnector.getEntity()!! as Entity
+                            var toBePulled = player as LivingEntity
+                            if(shift && axeConnector.getEntity()!!.hooked?.isAlive == true){
+                                destination = player
+                                toBePulled = axeConnector.getEntity()!!.hooked!!
+                            }
                             val puller = object: ForgeRunnable() {
                                 var arrived = false
                                 override fun run() {
-                                    if(!entity.isAlive)this.setCancelled(true)
-                                    if(entity.distanceToSqr(player) <= 2.25 && !arrived){
+                                    if(!destination.isAlive)this.setCancelled(true)
+                                    if(destination.distanceToSqr(toBePulled) <= 2.25 && !arrived){
                                         arrived = true
-                                        player.deltaMovement = Vector3d.ZERO
+                                        toBePulled.deltaMovement = Vector3d.ZERO
                                     }
-                                    var v = entity.position().subtract(player.position()).normalize().scale(0.4)
+                                    var v = destination.position().subtract(toBePulled.position()).normalize().scale(0.4)
                                     if(arrived){
-                                        v = Vector3d(0.0, -player.deltaMovement.y, 0.0)
+                                        v = Vector3d(0.0, -toBePulled.deltaMovement.y, 0.0)
                                     }
-                                    val after = player.deltaMovement.add(v)
-                                    player.deltaMovement = after
-                                    player.hurtMarked = true
+                                    val after = toBePulled.deltaMovement.add(v)
+                                    toBePulled.deltaMovement = after
+                                    toBePulled.hurtMarked = true
                                 }
 
                                 override fun setCancelled(cancel: Boolean){
-                                    entity.remove()
+                                    destination.remove()
                                     axeConnector.setEntity(null)
                                     super.setCancelled(cancel)
                                 }
@@ -65,7 +73,7 @@ class WorldAxeItem(properties:Properties): AxeItem(ItemTier.NETHERITE, 5.0f, -3.
                             axeConnector.getPuller()?.setCancelled(true)
                         }
                     }else{
-                        entity.remove()
+                        axeConnector.getEntity()!!.remove()
                         axeConnector.setEntity(null)
                     }
                 }
