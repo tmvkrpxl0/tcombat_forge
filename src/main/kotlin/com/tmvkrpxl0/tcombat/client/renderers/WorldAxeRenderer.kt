@@ -16,10 +16,12 @@ import net.minecraft.client.renderer.texture.AtlasTexture
 import net.minecraft.client.renderer.texture.OverlayTexture
 import net.minecraft.entity.player.PlayerEntity
 import net.minecraft.item.ItemStack
+import net.minecraft.item.Items
 import net.minecraft.util.HandSide
 import net.minecraft.util.ResourceLocation
 import net.minecraft.util.math.MathHelper
 import net.minecraft.util.math.vector.Matrix4f
+import net.minecraft.util.math.vector.Quaternion
 import net.minecraft.util.math.vector.Vector3d
 import net.minecraft.util.math.vector.Vector3f
 
@@ -38,12 +40,20 @@ class WorldAxeRenderer(private val renderManager: EntityRendererManager) :
         bufferIn: IRenderTypeBuffer,
         packedLightIn: Int
     ) {
-        matrixStack.pushPose()
         val itemStack = worldAxeEntity.baseAxe
+        val owner = worldAxeEntity.owner!! as PlayerEntity
         val itemRenderer = Minecraft.getInstance().itemRenderer ///////////////////////Render axe start
         matrixStack.pushPose()
-        matrixStack.mulPose(Vector3f.YP.rotationDegrees(180 - worldAxeEntity.yRot + 90))
-        matrixStack.mulPose(Vector3f.ZP.rotationDegrees(worldAxeEntity.xRot - 20))
+        matrixStack.pushPose()
+        val lookAngle = worldAxeEntity.lookAngle
+        val lookAnglef = Vector3f(lookAngle.x.toFloat(), lookAngle.y.toFloat(), lookAngle.z.toFloat())
+        val q = Quaternion(lookAnglef, worldAxeEntity.getzRot(), true)
+        matrixStack.translate(0.0, 0.4, 0.0)
+        matrixStack.translate(lookAngle.x * 0.2, lookAngle.y * 0.2, lookAngle.z * 0.2)
+        matrixStack.mulPose(q)
+        matrixStack.mulPose(Vector3f.YP.rotationDegrees(-90-worldAxeEntity.yRot))
+        matrixStack.mulPose(Vector3f.ZP.rotationDegrees(-45F))
+        matrixStack.mulPose(Vector3f.ZP.rotationDegrees(-worldAxeEntity.xRot))
         matrixStack.scale(1.5f, 1.5f, 1.5f)
         val iBakedModel: IBakedModel = Minecraft.getInstance().modelManager.getModel(AXE)
         itemRenderer.render(
@@ -57,105 +67,76 @@ class WorldAxeRenderer(private val renderManager: EntityRendererManager) :
             iBakedModel
         )
         matrixStack.popPose() ///////////////////////Render axe stop
-        //////////////////////Render line start
-        val playerentity = worldAxeEntity.owner as PlayerEntity
-        matrixStack.pushPose()
-        val lookVec = worldAxeEntity.lookAngle
-        matrixStack.translate(lookVec.x, lookVec.y, lookVec.z)
-        matrixStack.scale(0.5f, 0.5f, 0.5f)
-        matrixStack.mulPose(renderManager.cameraOrientation())
-        matrixStack.mulPose(Vector3f.YP.rotationDegrees(180.0f))
-        matrixStack.popPose()
-        var lvt_12_1_ = if (playerentity.mainArm == HandSide.RIGHT) 1 else -1
-        val itemstack: ItemStack = playerentity.mainHandItem
-        if (itemstack.item !== TCombatItems.WORLD_AXE.get()) {
-            lvt_12_1_ = -lvt_12_1_
+
+        var i = if (owner.mainArm == HandSide.RIGHT) 1 else -1
+        val mainHand: ItemStack = owner.mainHandItem
+        if (mainHand.item != TCombatItems.WORLD_AXE.get()) {
+            i = -i
         }
-        val lvt_14_1_: Float = playerentity.getAttackAnim(partialTicks)
-        val lvt_15_1_ = MathHelper.sin(MathHelper.sqrt(lvt_14_1_) * 3.1415927f)
-        val lvt_16_1_ =
-            (MathHelper.lerp(partialTicks, playerentity.yBodyRotO, playerentity.yBodyRot) * 0.017453292f).toFloat()
-        val lvt_17_1_ = MathHelper.sin(lvt_16_1_).toDouble()
-        val lvt_19_1_ = MathHelper.cos(lvt_16_1_).toDouble()
-        val lvt_21_1_ = lvt_12_1_.toDouble() * 0.35
-        val lvt_25_2_: Double
-        val lvt_27_2_: Double
-        val lvt_29_2_: Double
-        val lvt_31_2_: Float
-        var lvt_32_2_: Double
-        if ((entityRenderDispatcher.options == null || entityRenderDispatcher.options.cameraType.isFirstPerson) && playerentity === Minecraft.getInstance().player) {
-            lvt_32_2_ = entityRenderDispatcher.options.fov
-            lvt_32_2_ /= 100.0
-            var lvt_34_1_ = Vector3d(lvt_12_1_.toDouble() * -0.36 * lvt_32_2_, -0.045 * lvt_32_2_, 0.4)
-            lvt_34_1_ = lvt_34_1_.xRot(
-                (-MathHelper.lerp(
-                    partialTicks, playerentity.xRotO, playerentity.xRot
-                ) * 0.017453292f)
-            )
-            lvt_34_1_ = lvt_34_1_.yRot(
-                (-MathHelper.lerp(
-                    partialTicks, playerentity.yRotO, playerentity.yRot
-                ) * 0.017453292f)
-            )
-            lvt_34_1_ = lvt_34_1_.yRot(lvt_15_1_ * 0.5f)
-            lvt_34_1_ = lvt_34_1_.xRot(-lvt_15_1_ * 0.7f)
-            lvt_25_2_ = MathHelper.lerp(partialTicks.toDouble(), playerentity.xo, playerentity.getX()) + lvt_34_1_.x
-            lvt_27_2_ = MathHelper.lerp(partialTicks.toDouble(), playerentity.yo, playerentity.getY()) + lvt_34_1_.y
-            lvt_29_2_ = MathHelper.lerp(partialTicks.toDouble(), playerentity.zo, playerentity.getZ()) + lvt_34_1_.z
-            lvt_31_2_ = playerentity.getEyeHeight()
+
+        val animaDuration: Float = owner.getAttackAnim(partialTicks)
+        val animaRadian = MathHelper.sin(MathHelper.sqrt(animaDuration) * Math.PI.toFloat())
+        val bodyRadian =
+            MathHelper.lerp(partialTicks, owner.yBodyRotO, owner.yBodyRot) * (Math.PI.toFloat() / 180f)
+        val animaX = MathHelper.sin(bodyRadian).toDouble()
+        val animaY = MathHelper.cos(bodyRadian).toDouble()
+        val animaZ = i.toDouble() * 0.35
+        val rodX: Double
+        val rodY: Double
+        val rodZ: Double
+        val yOffset: Float
+        if (entityRenderDispatcher.options.cameraType.isFirstPerson && owner === Minecraft.getInstance().player) {
+            var fov = entityRenderDispatcher.options.fov
+            fov /= 100.0
+            var vector3d = Vector3d(i.toDouble() * -0.5 * fov, 0.02 * fov, 0.325)
+            vector3d = vector3d.xRot(-MathHelper.lerp(partialTicks, owner.xRotO, owner.xRot) * (Math.PI.toFloat() / 180f))
+            vector3d = vector3d.yRot(-MathHelper.lerp(partialTicks, owner.yRotO, owner.yRot) * (Math.PI.toFloat() / 180f))
+            vector3d = vector3d.yRot(animaRadian * 0.5f)
+            vector3d = vector3d.xRot(-animaRadian * 0.7f)
+            rodX = MathHelper.lerp(partialTicks.toDouble(), owner.xo, owner.getX()) + vector3d.x
+            rodY = MathHelper.lerp(partialTicks.toDouble(), owner.yo, owner.getY()) + vector3d.y
+            rodZ = MathHelper.lerp(partialTicks.toDouble(), owner.zo, owner.getZ()) + vector3d.z
+            yOffset = owner.getEyeHeight()
         } else {
-            lvt_25_2_ = MathHelper.lerp(
-                partialTicks.toDouble(), playerentity.xo, playerentity.x
-            ) - lvt_19_1_ * lvt_21_1_ - lvt_17_1_ * 0.8
-            lvt_27_2_ =
-                playerentity.yo + playerentity.eyeHeight.toDouble() + (playerentity.y - playerentity.yo) * partialTicks.toDouble() - 0.45
-            lvt_29_2_ = MathHelper.lerp(
-                partialTicks.toDouble(), playerentity.zo, playerentity.z
-            ) - lvt_17_1_ * lvt_21_1_ + lvt_19_1_ * 0.8
-            lvt_31_2_ = if (playerentity.isCrouching) -0.1875f else 0.0f
+            rodX = MathHelper.lerp(partialTicks.toDouble(), owner.xo, owner.x) - animaY * animaZ - animaX * 0.8
+            rodY = owner.yo + owner.eyeHeight.toDouble() + (owner.y - owner.yo) * partialTicks.toDouble() - 0.45
+            rodZ = MathHelper.lerp(partialTicks.toDouble(), owner.zo, owner.z) - animaX * animaZ + animaY * 0.8
+            yOffset = if (owner.isCrouching) -0.1875f else 0.0f
         }
 
-        lvt_32_2_ = MathHelper.lerp(partialTicks.toDouble(), worldAxeEntity.xo, worldAxeEntity.x)
-        val lvt_34_2_ = MathHelper.lerp(partialTicks.toDouble(), worldAxeEntity.yo, worldAxeEntity.y) + 0.25
-        val lvt_36_1_ = MathHelper.lerp(partialTicks.toDouble(), worldAxeEntity.zo, worldAxeEntity.z)
-        val lvt_38_1_ = (lvt_25_2_ - lvt_32_2_).toFloat()
-        val lvt_39_1_: Float = (lvt_27_2_ - lvt_34_2_).toFloat() + lvt_31_2_
-        val lvt_40_1_ = (lvt_29_2_ - lvt_36_1_).toFloat()
-        val lvt_41_1_: IVertexBuilder = bufferIn.getBuffer(RenderType.lines())
-        val lvt_42_1_: Matrix4f = matrixStack.last().pose()
-        val lvt_43_1_ = 1
+        val entityX = MathHelper.lerp(partialTicks.toDouble(), worldAxeEntity.xo, worldAxeEntity.x)
+        val entityY = MathHelper.lerp(partialTicks.toDouble(), worldAxeEntity.yo, worldAxeEntity.y) + 0.25
+        val entityZ = MathHelper.lerp(partialTicks.toDouble(), worldAxeEntity.zo, worldAxeEntity.z)
+        val diffX = (rodX - entityX).toFloat()
+        val diffY = (rodY - entityY).toFloat() + yOffset
+        val diffZ = (rodZ - entityZ).toFloat()
+        val lineBuffer: IVertexBuilder = bufferIn.getBuffer(RenderType.lines())
+        val linePose = matrixStack.last().pose()
+        val j = 16
 
-        for (lvt_44_1_ in 0..15) {
-            stringVertex(
-                lvt_38_1_, lvt_39_1_, lvt_40_1_, lvt_41_1_, lvt_42_1_, fraction(lvt_44_1_, 16)
-            )
-            stringVertex(
-                lvt_38_1_, lvt_39_1_, lvt_40_1_, lvt_41_1_, lvt_42_1_, fraction(lvt_44_1_ + 1, 16)
-            )
+        for (k in 0 until j) {
+            stringVertex(diffX, diffY, diffZ, lineBuffer, linePose, fraction(k, 16))
+            stringVertex(diffX, diffY, diffZ, lineBuffer, linePose, fraction(k + 1, 16))
         }
-
-        matrixStack.popPose() ////////////////////Render line stop
+        matrixStack.popPose()
         super.render(worldAxeEntity, yaw, partialTicks, matrixStack, bufferIn, packedLightIn)
     }
 
-    private fun fraction(p_229105_0_: Int, p_229105_1_: Int): Float {
-        return p_229105_0_.toFloat() / p_229105_1_.toFloat()
+    private fun fraction(up: Int, down: Int): Float {
+        return up.toFloat() / down.toFloat()
     }
 
     private fun stringVertex(
-        p_229104_0_: Float,
-        p_229104_1_: Float,
-        p_229104_2_: Float,
-        p_229104_3_: IVertexBuilder,
-        p_229104_4_: Matrix4f,
-        p_229104_5_: Float
+        x: Float,
+        y: Float,
+        z: Float,
+        iVertexBuilder: IVertexBuilder,
+        pose: Matrix4f,
+        fraction: Float
     ) {
-        p_229104_3_.vertex(
-            p_229104_4_,
-            p_229104_0_ * p_229104_5_,
-            p_229104_1_ * (p_229104_5_ * p_229104_5_ + p_229104_5_) * 0.5f + 0.25f,
-            p_229104_2_ * p_229104_5_
-        ).color(0, 0, 0, 255).endVertex()
+        iVertexBuilder
+            .vertex(pose, x * fraction, y * (fraction * fraction + fraction) * 0.5f + 0.25f, z * fraction)
+            .color(0, 0, 0, 255).endVertex()
     }
 
 }

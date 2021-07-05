@@ -20,8 +20,11 @@ import net.minecraft.network.datasync.DataSerializers
 import net.minecraft.network.datasync.EntityDataManager
 import net.minecraft.particles.BlockParticleData
 import net.minecraft.particles.ParticleTypes
+import net.minecraft.particles.RedstoneParticleData
 import net.minecraft.util.math.*
+import net.minecraft.util.math.vector.Quaternion
 import net.minecraft.util.math.vector.Vector3d
+import net.minecraft.util.math.vector.Vector3f
 import net.minecraft.world.World
 import net.minecraftforge.event.ForgeEventFactory
 import net.minecraftforge.fml.common.registry.IEntityAdditionalSpawnData
@@ -30,6 +33,7 @@ import net.minecraftforge.fml.network.NetworkHooks
 class WorldAxeEntity : ProjectileEntity, IEntityAdditionalSpawnData {
     companion object{
         val HOOKED: DataParameter<Int> = EntityDataManager.defineId(WorldAxeEntity::class.java, DataSerializers.INT)
+        val ZROT:DataParameter<Float> = EntityDataManager.defineId(WorldAxeEntity::class.java, DataSerializers.FLOAT)
     }
     var inGround = false
     private var lastState: BlockState? = null
@@ -41,8 +45,16 @@ class WorldAxeEntity : ProjectileEntity, IEntityAdditionalSpawnData {
     constructor(player: PlayerEntity, baseItem:ItemStack):this(TCombatEntityTypes.WORLD_AXE.get(), player.level){
         this.owner = player
         this.baseAxe = baseItem
-        this.absMoveTo(player.x, player.eyeY, player.z, player.yRot, player.xRot)
+        val lookAngle = player.lookAngle
+        this.absMoveTo(player.x + lookAngle.x,
+            player.eyeY - (this.dimensions.height*2/3) + lookAngle.y,
+            player.z + lookAngle.z,
+            player.yRot,
+            0F
+        )
+        this.yRot += 90
         this.isNoGravity = false
+        this.setzRot(90 - player.xRot)
     }
 
     override fun readAdditionalSaveData(compound: CompoundNBT) {
@@ -62,6 +74,7 @@ class WorldAxeEntity : ProjectileEntity, IEntityAdditionalSpawnData {
 
     override fun defineSynchedData() {
         this.entityData.define(HOOKED, 0)
+        this.entityData.define(ZROT, 0f)
     }
 
     override fun remove() {
@@ -74,67 +87,18 @@ class WorldAxeEntity : ProjectileEntity, IEntityAdditionalSpawnData {
     }
 
     override fun tick() {
-        if(this.owner == null || !this.owner!!.isAlive || this.shouldRemove(this.owner as PlayerEntity)){
-            this.remove()
-        }
-        if(this.hooked?.isAlive != true){
-            this.hooked = null
-            this.entityData.set(HOOKED, 0)
-        }
-        var vector3d = this.deltaMovement
-        if(xRotO == 0.0f && yRotO == 0.0f) {
-            val f = MathHelper.sqrt(getHorizontalDistanceSqr(vector3d))
-            yRot = (MathHelper.atan2(vector3d.x, vector3d.z) * (180f / Math.PI.toFloat()).toDouble()).toFloat()
-            xRot = (MathHelper.atan2(vector3d.y, f.toDouble()) * (180f / Math.PI.toFloat()).toDouble()).toFloat()
-            yRotO = yRot
-            xRotO = xRot
-        }
-        val blockpos = this.blockPosition()
-        val blockstate = this.level.getBlockState(blockpos)
-        if(!blockstate.isAir(this.level, blockpos)) {
-            val voxelshape = blockstate.getCollisionShape(this.level, blockpos)
-            if(!voxelshape.isEmpty) {
-                val vector3d1 = this.position()
-                for(axisalignedbb in voxelshape.toAabbs()) {
-                    if(axisalignedbb.move(blockpos).contains(vector3d1)) {
-                        inGround = true
-                        break
-                    }
-                }
+        if(this.level.isClientSide){
+            val particle = RedstoneParticleData(1f, 0f, 0f, 1f)
+            val position = this.position()
+            val lookAnglef = Vector3f(lookAngle.x.toFloat(), lookAngle.y.toFloat(), lookAngle.z.toFloat())
+            for(i in 1 until 11){
+                val offset = Vector3f.YP.copy()
+                offset.transform(Vector3f.XP.rotationDegrees(xRot))
+                offset.transform(Quaternion(lookAnglef, this.getzRot()-90, true))
+                offset.mul((0.1 * i).toFloat())
+                this.level.addParticle(particle, position.x + offset.x(), position.y + offset.y(), position.z + offset.z(),
+                    0.0, 0.0, 0.0)
             }
-        }
-        if(this.isInWaterOrRain) {
-            this.clearFire()
-        }
-        if(inGround) {
-            if(lastState !== blockstate && this.shouldFall()) {
-                this.fall()
-            }
-        } else if(this.hooked == null){
-            vector3d = this.deltaMovement
-            val d3 = vector3d.x
-            val d4 = vector3d.y
-            val d0 = vector3d.z
-            val d5 = this.x + d3
-            val d1 = this.y + d4
-            val d2 = this.z + d0
-            val f1 = MathHelper.sqrt(getHorizontalDistanceSqr(vector3d))
-            xRot = (MathHelper.atan2(d4, f1.toDouble()) * (180/ Math.PI)).toFloat()
-            xRot = lerpRotation(xRotO, xRot)
-            var f2 = 0.99f
-            if(this.isInWater) {
-                f2 = getWaterInertia()
-            }
-            this.deltaMovement = vector3d.scale(f2.toDouble())
-            if(!isNoGravity) {
-                val vector3d4 = this.deltaMovement
-                this.setDeltaMovement(vector3d4.x, vector3d4.y - 0.05, vector3d4.z)
-            }
-            this.setPos(d5, d1, d2)
-           this.checkInsideBlocks()
-        }else{
-            val h = this.hooked!!
-            this.setPos(h.x, h.getY(0.8), h.z)
         }
         super.tick()
     }
@@ -215,5 +179,13 @@ class WorldAxeEntity : ProjectileEntity, IEntityAdditionalSpawnData {
             this.remove()
             true
         }
+    }
+
+    fun setzRot(zRot: Float){
+        this.entityData.set(ZROT, zRot)
+    }
+
+    fun getzRot(): Float{
+        return this.entityData.get(ZROT)
     }
 }

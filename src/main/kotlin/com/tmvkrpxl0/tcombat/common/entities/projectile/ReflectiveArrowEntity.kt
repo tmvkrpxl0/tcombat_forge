@@ -16,6 +16,7 @@ import net.minecraft.network.play.server.SEntityVelocityPacket
 import net.minecraft.util.math.BlockPos
 import net.minecraft.util.math.BlockRayTraceResult
 import net.minecraft.util.math.EntityRayTraceResult
+import net.minecraft.util.math.vector.Quaternion
 import net.minecraft.util.math.vector.Vector3d
 import net.minecraft.world.World
 import net.minecraftforge.fml.network.NetworkHooks
@@ -25,6 +26,7 @@ import java.lang.Double.max
 class ReflectiveArrowEntity: AbstractArrowEntity {
     var totalDistanceSq = 0.0
     var lastDistanceSq = 0.0
+    var target: LivingEntity? = null
 
     companion object{
         val FROM: DataParameter<BlockPos> = EntityDataManager.defineId(ReflectiveArrowEntity::class.java, DataSerializers.BLOCK_POS)
@@ -70,8 +72,18 @@ class ReflectiveArrowEntity: AbstractArrowEntity {
                 }
             }
         }
-        if(!this.level.isClientSide && this.getFrom() == BlockPos.ZERO){
-            this.remove()
+        if(!this.level.isClientSide){
+            if(this.target!=null){
+                if(!this.isStop()){
+                    val vToTarget = this.target!!.position().subtract(this.position()).normalize()
+                    val deltaLength = this.deltaMovement.length()
+                    this.deltaMovement = vToTarget.scale(deltaLength)
+
+                }
+            }
+            if(this.getFrom() == BlockPos.ZERO) {
+                this.remove()
+            }
         }
         this.totalDistanceSq = max(this.lastDistanceSq + this.getFrom().distSqr(this.blockPosition()), this.totalDistanceSq)
         if(this.totalDistanceSq>25 * 25)this.isNoGravity = false
@@ -96,7 +108,8 @@ class ReflectiveArrowEntity: AbstractArrowEntity {
     override fun onHitEntity(result: EntityRayTraceResult) {
         if(!this.level.isClientSide){
             if(result.entity is LivingEntity && (result.entity as LivingEntity).useItem.isShield(result.entity as LivingEntity)){
-                reflect(TCombatUtil.getPerpendicularRandom(result.entity.lookAngle, this.level.random), result.entity.blockPosition())
+                val look = result.entity.lookAngle
+                reflect(Vector3d(look.x, 0.0, look.z), result.entity.blockPosition())
             }
         }
     }
