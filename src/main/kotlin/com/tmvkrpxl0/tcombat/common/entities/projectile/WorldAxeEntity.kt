@@ -38,7 +38,7 @@ class WorldAxeEntity : ProjectileEntity, IEntityAdditionalSpawnData {
     var inGround = false
     private var lastState: BlockState? = null
     lateinit var baseAxe: ItemStack
-    private var hooked: LivingEntity? = null
+    var hooked: LivingEntity? = null
 
     constructor(entityType: EntityType<WorldAxeEntity>, world: World) : super(entityType, world)
 
